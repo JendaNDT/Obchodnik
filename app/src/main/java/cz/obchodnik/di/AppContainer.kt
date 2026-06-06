@@ -3,7 +3,9 @@ package cz.obchodnik.di
 import android.content.Context
 import androidx.room.Room
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import cz.obchodnik.BuildConfig
 import cz.obchodnik.core.CoroutineDispatchers
+import cz.obchodnik.data.backup.BackupRepository
 import cz.obchodnik.data.local.ObchodnikDatabase
 import cz.obchodnik.data.prefs.SettingsRepository
 import cz.obchodnik.data.remote.coingecko.CoinGeckoApi
@@ -101,6 +103,15 @@ class AppContainer(
     )
     val portfolioRepository = PortfolioRepository(database.holdingDao())
     val alertRepository = AlertRepository(database.alertDao())
+
+    val backupRepository = BackupRepository(
+        watchlistRepository = watchlistRepository,
+        portfolioRepository = portfolioRepository,
+        alertRepository = alertRepository,
+        settingsRepository = settingsRepository,
+        json = json,
+        appVersion = BuildConfig.VERSION_NAME,
+    )
 
     private val fngRetrofit: Retrofit =
         Retrofit.Builder()
