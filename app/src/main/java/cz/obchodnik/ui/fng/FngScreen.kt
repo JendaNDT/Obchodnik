@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -131,7 +133,11 @@ private fun FngGaugeCard(fng: Fng) {
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
-            FngGauge(value = fng.value, modifier = Modifier.size(width = 220.dp, height = 120.dp))
+            FngGauge(
+                value = fng.value,
+                description = "Index strachu a chamtivosti: ${fng.value} ze 100, $classificationCs",
+                modifier = Modifier.size(width = 220.dp, height = 120.dp),
+            )
 
             Text(
                 text = fng.value.toString(),
@@ -153,9 +159,9 @@ private fun FngGaugeCard(fng: Fng) {
 }
 
 @Composable
-private fun FngGauge(value: Int, modifier: Modifier = Modifier) {
+private fun FngGauge(value: Int, description: String, modifier: Modifier = Modifier) {
     val c = Obchodnik.colors
-    Canvas(modifier = modifier) {
+    Canvas(modifier = modifier.semantics { contentDescription = description }) {
         val strokeWidth = 10.dp.toPx()
         val radius = size.width / 2f - strokeWidth
         val center = Offset(size.width / 2f, size.height - 10.dp.toPx())
@@ -309,7 +315,11 @@ private fun FngChartCard(history: List<Fng>) {
 @Composable
 private fun FngHistoryChart(history: List<Fng>, modifier: Modifier = Modifier) {
     val c = Obchodnik.colors
-    Canvas(modifier = modifier) {
+    Canvas(
+        modifier = modifier.semantics {
+            contentDescription = "Graf vývoje indexu strachu a chamtivosti, ${history.size} hodnot"
+        },
+    ) {
         if (history.size < 2) return@Canvas
 
         val maxVal = 100f

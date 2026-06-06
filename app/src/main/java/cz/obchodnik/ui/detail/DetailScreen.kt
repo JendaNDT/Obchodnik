@@ -32,6 +32,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -92,7 +94,13 @@ fun DetailScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(226.dp)
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                        .semantics {
+                            contentDescription = "Cenový graf aktiva " +
+                                (state.asset?.name ?: "") +
+                                ", změna za 24 hodin " +
+                                MarketFormatters.percent(state.quote?.change24hPct)
+                        },
                     contentAlignment = Alignment.Center,
                 ) {
                     if (state.chartMode == ChartMode.LINE) {
