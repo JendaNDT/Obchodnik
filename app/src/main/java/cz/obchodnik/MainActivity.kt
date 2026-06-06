@@ -271,6 +271,8 @@ private fun ObchodnikAppContent(app: ObchodnikApp) {
                     onAlphaVantageKeyChanged = viewModel::setAlphaVantageKey,
                     onNotificationsEnabledChanged = viewModel::setNotificationsEnabled,
                     onResetOnboarding = viewModel::resetOnboarding,
+                    onExportData = viewModel::exportData,
+                    onImportData = viewModel::importData,
                     onBack = { navController.popBackStack() },
                 )
             }

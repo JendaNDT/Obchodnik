@@ -1,5 +1,8 @@
 package cz.obchodnik.ui.settings
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -61,11 +64,20 @@ fun SettingsScreen(
     onAlphaVantageKeyChanged: (String) -> Unit,
     onNotificationsEnabledChanged: (Boolean) -> Unit,
     onResetOnboarding: () -> Unit,
+    onExportData: (Uri) -> Unit,
+    onImportData: (Uri) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val c = Obchodnik.colors
     val scrollState = rememberScrollState()
+
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json"),
+    ) { uri -> uri?.let(onExportData) }
+    val importLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri -> uri?.let(onImportData) }
 
     Column(
         modifier = modifier
@@ -300,6 +312,51 @@ fun SettingsScreen(
                                 checked = state.settings.notificationsEnabled,
                                 onCheckedChange = onNotificationsEnabledChanged
                             )
+                        }
+                    }
+                }
+
+                // SECTION: ZÁLOHA DAT
+                SettingsSection(title = "Záloha dat") {
+                    ObchodnikCard(padding = androidx.compose.foundation.layout.PaddingValues(14.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                            Text(
+                                text = "Exportuje watchlist, portfolio, alerty a nastavení do souboru JSON. Import přidá uložené položky k aktuálním.",
+                                color = c.text3,
+                                fontSize = 11.sp,
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            ) {
+                                Button(
+                                    onClick = { exportLauncher.launch("obchodnik-zaloha.json") },
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(Obchodnik.radii.chip),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = c.accent,
+                                        contentColor = c.onAccent,
+                                    ),
+                                ) {
+                                    Text(text = "Exportovat", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                                }
+                                Button(
+                                    onClick = {
+                                        importLauncher.launch(
+                                            arrayOf("application/json", "application/octet-stream", "text/plain"),
+                                        )
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(Obchodnik.radii.chip),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = c.surface2,
+                                        contentColor = c.text,
+                                    ),
+                                    border = BorderStroke(1.dp, c.borderStrong),
+                                ) {
+                                    Text(text = "Importovat", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                                }
+                            }
                         }
                     }
                 }

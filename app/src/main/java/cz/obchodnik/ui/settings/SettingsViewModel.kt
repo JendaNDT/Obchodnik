@@ -1,21 +1,27 @@
 package cz.obchodnik.ui.settings
 
 import android.content.Context
+import android.net.Uri
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import cz.obchodnik.ObchodnikApp
+import cz.obchodnik.data.backup.BackupRepository
 import cz.obchodnik.data.prefs.SettingsRepository
 import cz.obchodnik.work.WorkScheduler
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SettingsViewModel(
     private val context: Context?,
     private val settingsRepository: SettingsRepository,
+    private val backupRepository: BackupRepository? = null,
 ) : ViewModel() {
 
     val uiState: StateFlow<SettingsUiState> = settingsRepository.settings
@@ -101,6 +107,52 @@ class SettingsViewModel(
         }
     }
 
+    fun exportData(uri: Uri) {
+        val repo = backupRepository ?: return
+        viewModelScope.launch {
+            val result = runCatching {
+                val jsonText = repo.exportToJson()
+                withContext(Dispatchers.IO) {
+                    val ctx = context ?: error("Kontext nedostupný")
+                    ctx.contentResolver.openOutputStream(uri)?.use { out ->
+                        out.write(jsonText.toByteArray(Charsets.UTF_8))
+                    } ?: error("Nelze otevřít soubor pro zápis")
+                }
+            }
+            toast(
+                result.fold(
+                    onSuccess = { "Záloha uložena" },
+                    onFailure = { "Export selhal: ${it.message ?: "neznámá chyba"}" },
+                ),
+            )
+        }
+    }
+
+    fun importData(uri: Uri) {
+        val repo = backupRepository ?: return
+        viewModelScope.launch {
+            val result = runCatching {
+                val text = withContext(Dispatchers.IO) {
+                    val ctx = context ?: error("Kontext nedostupný")
+                    ctx.contentResolver.openInputStream(uri)?.use { input ->
+                        input.bufferedReader(Charsets.UTF_8).readText()
+                    } ?: error("Nelze otevřít soubor pro čtení")
+                }
+                repo.importFromJson(text)
+            }
+            toast(
+                result.fold(
+                    onSuccess = { "Import dokončen: ${it.assets} aktiv, ${it.holdings} pozic, ${it.alerts} alertů" },
+                    onFailure = { "Import selhal: ${it.message ?: "neplatný soubor"}" },
+                ),
+            )
+        }
+    }
+
+    private fun toast(message: String) {
+        context?.let { Toast.makeText(it, message, Toast.LENGTH_LONG).show() }
+    }
+
     companion object {
         fun factory(app: ObchodnikApp): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
@@ -109,6 +161,7 @@ class SettingsViewModel(
                     return SettingsViewModel(
                         context = app,
                         settingsRepository = app.container.settingsRepository,
+                        backupRepository = app.container.backupRepository,
                     ) as T
                 }
             }
