@@ -1,5 +1,6 @@
 package cz.obchodnik
 
+import android.content.Intent
 import android.os.Bundle
 import android.net.Uri
 import android.os.Build
@@ -22,7 +23,9 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -52,9 +55,13 @@ import cz.obchodnik.ui.theme.ObchodnikTheme
 import cz.obchodnik.ui.theme.ThemeChoice
 
 class MainActivity : ComponentActivity() {
+
+    private val pendingAssetId = mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        pendingAssetId.value = intent?.getStringExtra(EXTRA_ASSET_ID)
         val container = (application as ObchodnikApp).container
         val settingsRepository = container.settingsRepository
 
@@ -105,16 +112,40 @@ class MainActivity : ComponentActivity() {
                         }
                     )
                 } else {
-                    ObchodnikAppContent(app = application as ObchodnikApp)
+                    ObchodnikAppContent(
+                        app = application as ObchodnikApp,
+                        pendingAssetId = pendingAssetId.value,
+                        onAssetConsumed = { pendingAssetId.value = null },
+                    )
                 }
             }
         }
     }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        pendingAssetId.value = intent.getStringExtra(EXTRA_ASSET_ID)
+    }
+
+    companion object {
+        const val EXTRA_ASSET_ID = "cz.obchodnik.extra.ASSET_ID"
+    }
 }
 
 @Composable
-private fun ObchodnikAppContent(app: ObchodnikApp) {
+private fun ObchodnikAppContent(
+    app: ObchodnikApp,
+    pendingAssetId: String?,
+    onAssetConsumed: () -> Unit,
+) {
     val navController = rememberNavController()
+    LaunchedEffect(pendingAssetId) {
+        if (pendingAssetId != null) {
+            navController.navigate("detail/${Uri.encode(pendingAssetId)}")
+            onAssetConsumed()
+        }
+    }
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 

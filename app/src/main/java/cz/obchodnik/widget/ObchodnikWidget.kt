@@ -1,6 +1,7 @@
 package cz.obchodnik.widget
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -23,8 +24,10 @@ import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.LocalContext
 import androidx.glance.LocalSize
+import android.net.Uri
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
+import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.provideContent
@@ -177,6 +180,14 @@ private enum class WidgetLayoutType {
     SMALL, MEDIUM, LARGE
 }
 
+private fun openAssetAction(context: Context, assetId: String) =
+    androidx.glance.appwidget.action.actionStartActivity(
+        Intent(context, MainActivity::class.java).apply {
+            putExtra(MainActivity.EXTRA_ASSET_ID, assetId)
+            data = Uri.parse("obchodnik://asset/$assetId")
+        },
+    )
+
 @Composable
 private fun WidgetHeader(accentColor: Color, rightContent: @Composable () -> Unit = {}) {
     Row(
@@ -234,7 +245,7 @@ private fun SmallWidgetLayout(
     val up = change >= 0.0
     val changeColor = if (up) Color(0xFF16C784) else Color(0xFFEA3943)
 
-    Column(modifier = GlanceModifier.fillMaxSize()) {
+    Column(modifier = GlanceModifier.fillMaxSize().clickable(openAssetAction(context, asset.id))) {
         WidgetHeader(accentColor)
         Spacer(modifier = GlanceModifier.height(4.dp))
         Row(
@@ -384,7 +395,15 @@ private fun LargeWidgetLayout(
             )
             Spacer(modifier = GlanceModifier.defaultWeight())
             Text(
-                text = "Otevřít aplikaci →",
+                text = "↻ Obnovit",
+                style = TextStyle(color = ColorProvider(Color.LightGray), fontSize = 9.5.sp, fontWeight = FontWeight.Bold),
+                modifier = GlanceModifier
+                    .clickable(actionRunCallback<RefreshWidgetAction>())
+                    .padding(horizontal = 6.dp)
+            )
+            Spacer(modifier = GlanceModifier.width(8.dp))
+            Text(
+                text = "Otevřít →",
                 style = TextStyle(color = ColorProvider(accentColor), fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
             )
         }
@@ -404,8 +423,10 @@ private fun WidgetAssetRow(
     val changeColor = if (up) Color(0xFF16C784) else Color(0xFFEA3943)
     val color = runCatching { Color(android.graphics.Color.parseColor(asset.colorHex ?: "#3B82F6")) }.getOrDefault(Color(0xFF3B82F6))
 
+    val context = LocalContext.current
     Row(
-        modifier = GlanceModifier.fillMaxWidth().height(36.dp),
+        modifier = GlanceModifier.fillMaxWidth().height(36.dp)
+            .clickable(openAssetAction(context, asset.id)),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Logo monogram
