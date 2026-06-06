@@ -14,7 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.FolderOpen
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Speed
-import androidx.compose.material.icons.rounded.TrendingUp
+import androidx.compose.material.icons.automirrored.rounded.TrendingUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -131,7 +131,7 @@ private fun ObchodnikAppContent(app: ObchodnikApp) {
                     tonalElevation = 0.dp
                 ) {
                     val items = listOf(
-                        Triple("markets", "Trh", Icons.Rounded.TrendingUp),
+                        Triple("markets", "Trh", Icons.AutoMirrored.Rounded.TrendingUp),
                         Triple("portfolio", "Portfolio", Icons.Rounded.FolderOpen),
                         Triple("fng", "F&G", Icons.Rounded.Speed),
                         Triple("alerts", "Alerty", Icons.Rounded.Notifications),

@@ -10,6 +10,9 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import cz.obchodnik.core.crypto.KeystoreCrypto
+import cz.obchodnik.core.crypto.NoOpStringCrypto
+import cz.obchodnik.core.crypto.StringCrypto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -19,8 +22,9 @@ private val Context.obchodnikSettingsDataStore: DataStore<Preferences> by prefer
 
 class SettingsRepository(
     private val dataStore: DataStore<Preferences>,
+    private val crypto: StringCrypto = NoOpStringCrypto,
 ) : SettingsStore {
-    constructor(context: Context) : this(context.obchodnikSettingsDataStore)
+    constructor(context: Context) : this(context.obchodnikSettingsDataStore, KeystoreCrypto())
 
     override val settings: Flow<AppSettings> =
         dataStore.data.map { prefs ->
@@ -32,8 +36,8 @@ class SettingsRepository(
                 defaultChart = prefs[Keys.defaultChart] ?: "line",
                 density = prefs[Keys.density] ?: "normal",
                 showFngOnWidget = prefs[Keys.showFngOnWidget] ?: true,
-                coingeckoKey = prefs[Keys.coingeckoKey] ?: "",
-                alphaVantageKey = prefs[Keys.alphaVantageKey] ?: "",
+                coingeckoKey = crypto.decrypt(prefs[Keys.coingeckoKey] ?: ""),
+                alphaVantageKey = crypto.decrypt(prefs[Keys.alphaVantageKey] ?: ""),
                 onboardingDone = prefs[Keys.onboardingDone] ?: false,
                 notificationsEnabled = prefs[Keys.notificationsEnabled] ?: false,
                 avDailyCount = prefs[Keys.avDailyCount] ?: 0,
@@ -49,8 +53,8 @@ class SettingsRepository(
     suspend fun setDefaultChart(defaultChart: String) = update(Keys.defaultChart, defaultChart)
     suspend fun setDensity(density: String) = update(Keys.density, density)
     suspend fun setShowFngOnWidget(show: Boolean) = update(Keys.showFngOnWidget, show)
-    suspend fun setCoinGeckoKey(key: String) = update(Keys.coingeckoKey, key.trim())
-    suspend fun setAlphaVantageKey(key: String) = update(Keys.alphaVantageKey, key.trim())
+    suspend fun setCoinGeckoKey(key: String) = update(Keys.coingeckoKey, crypto.encrypt(key.trim()))
+    suspend fun setAlphaVantageKey(key: String) = update(Keys.alphaVantageKey, crypto.encrypt(key.trim()))
     suspend fun setOnboardingDone(done: Boolean) = update(Keys.onboardingDone, done)
     suspend fun setNotificationsEnabled(enabled: Boolean) = update(Keys.notificationsEnabled, enabled)
     suspend fun setAlphaVantageDailyCount(count: Int, date: String) {

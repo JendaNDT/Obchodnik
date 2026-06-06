@@ -25,7 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.TrendingUp
+import androidx.compose.material.icons.automirrored.rounded.TrendingUp
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
@@ -170,7 +170,7 @@ private fun WelcomeStep() {
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                Icons.Rounded.TrendingUp,
+                Icons.AutoMirrored.Rounded.TrendingUp,
                 contentDescription = null,
                 tint = c.accent,
                 modifier = Modifier.size(36.dp)
