@@ -1,6 +1,9 @@
 package cz.obchodnik.core.format
 
+import cz.obchodnik.domain.model.DataProvider
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 object MarketFormatters {
@@ -30,4 +33,15 @@ object MarketFormatters {
         }.format(kotlin.math.abs(value))
         return "$sign$body %"
     }
+
+    fun time(epochMillis: Long): String {
+        if (epochMillis <= 0L) return "—"
+        return SimpleDateFormat("HH:mm", cs).format(Date(epochMillis))
+    }
+
+    fun sourceLabel(provider: DataProvider): String =
+        when (provider) {
+            DataProvider.COINGECKO -> "CoinGecko"
+            DataProvider.ALPHAVANTAGE -> "Alpha Vantage"
+        }
 }

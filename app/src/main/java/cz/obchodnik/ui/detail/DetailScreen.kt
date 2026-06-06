@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cz.obchodnik.core.format.MarketFormatters
+import cz.obchodnik.domain.AssetType
 import cz.obchodnik.domain.model.ChartRange
 import cz.obchodnik.ui.components.AssetIcon
 import cz.obchodnik.ui.components.CandlePriceChart
@@ -132,6 +133,9 @@ fun DetailScreen(
             }
             item {
                 StatsGrid(state = state, modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
+            }
+            item {
+                DataInfoFooter(state = state, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
             }
             item {
                 ActionButtons(
@@ -256,6 +260,35 @@ private fun RangeTabs(
                     .clickable { onSelected(range) }
                     .padding(vertical = 8.dp),
             )
+        }
+    }
+}
+
+@Composable
+private fun DataInfoFooter(state: DetailUiState, modifier: Modifier = Modifier) {
+    val c = Obchodnik.colors
+    val asset = state.asset
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        val updated = MarketFormatters.time(state.quote?.updatedAt ?: 0L)
+        val source = asset?.source?.let { MarketFormatters.sourceLabel(it) } ?: "—"
+        Text(
+            text = "Aktualizováno $updated · Zdroj: $source",
+            color = c.text3,
+            fontFamily = JetBrainsMono,
+            fontSize = 11.sp,
+        )
+        when (asset?.type) {
+            AssetType.INDEX -> Text(
+                text = "Hodnota přibližně přes ETF zástupce (SPY/QQQ/DIA).",
+                color = c.text3,
+                fontSize = 11.sp,
+            )
+            AssetType.COMMODITY -> Text(
+                text = "Komoditní data se aktualizují přibližně jednou denně.",
+                color = c.text3,
+                fontSize = 11.sp,
+            )
+            else -> {}
         }
     }
 }
