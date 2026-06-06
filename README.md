@@ -64,8 +64,10 @@ Hotovo (všech 11 kroků):
 - Druhý zdroj dat Alpha Vantage (komodity + indexy přes ETF).
 - Portfolio, Alerty, Fear & Greed detail, Onboarding, prázdné/chybové stavy.
 
-Otevřené technické dluhy: Room používá `fallbackToDestructiveMigration()`
-(před produkcí nahradit migracemi); fonty jsou zatím systémové (viz níže).
+Otevřené technické dluhy: fonty jsou zatím systémové (viz níže). Room migrace
+mají hotovou infrastrukturu (export schémat + verzované migrace místo
+destruktivní při upgradu); instrumentované migrační testy přijdou s první
+reálnou migrací.
 
 ## Design handoff
 

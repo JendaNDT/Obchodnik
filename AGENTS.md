@@ -54,5 +54,8 @@ down `#EA3943`. Čísla v monospace (zabraňuje poskakování číslic).
   `./gradlew :app:assembleDebug :app:testDebugUnitTest --no-daemon`.
 - Fonty: zatím vestavěné rodiny; Google Fonts certs se nevymýšlejí ručně
   (viz `Type.kt`).
-- Room databáze je ve vývojové fázi na verzi 2 a používá
-  `fallbackToDestructiveMigration()`. Před produkcí nahradit skutečnými migracemi.
+- Room má zapnutý export schémat (`room.schemaLocation` -> `app/schemas`,
+  `exportSchema = true`) a verzované migrace; baseline je schéma verze 2.
+  Destruktivní migrace je povolená jen pro *downgrade*. **Workflow při změně
+  entity:** zvyš `version` v `@Database`, přidej `Migration` do
+  `ObchodnikDatabase.MIGRATIONS`, commitni nový `app/schemas/<verze>.json`.

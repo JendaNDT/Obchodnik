@@ -54,4 +54,4 @@ Výsledek: `BUILD SUCCESSFUL` dne 2026-06-06.
 - **Jazyk**: konverzace a UI stringy česky; kód, názvy, komentáře anglicky.
 - **Čísla**: Vždy monospace písmo (`JetBrainsMono`) pro ceny a procenta, aby se předešlo layout jitteru.
 - **DI**: Projekt nepoužívá Hilt ani Koin, nýbrž ruční dependency injection container `AppContainer` napojený přes Application třídu.
-- **Room**: Room DB je verze 2 a používá destruktivní migrace. Před ostrým nasazením je potřeba nahradit skutečnými migračními skripty.
+- **Room**: Room DB je verze 2 s exportem schémat (`app/schemas`) a verzovanými migracemi (`ObchodnikDatabase.MIGRATIONS`). Destruktivní migrace je povolená jen pro downgrade. Každá změna entity = zvýšit verzi + přidat Migration + commitnout nový schemas/<verze>.json.

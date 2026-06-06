@@ -121,8 +121,9 @@ Datum: 2026-06-06
 - Kombinované ověření
   `./gradlew :app:assembleDebug :app:testDebugUnitTest --no-daemon` prošlo
   2026-06-06 po dokončení Kroků 10 a 11.
-- Room DB je aktuálně verze 2 a během vývoje používá
-  `fallbackToDestructiveMigration()`.
+- Room DB je verze 2 s exportem schémat (`app/schemas`) a verzovanými
+  migracemi (`ObchodnikDatabase.MIGRATIONS`); destruktivní migrace jen pro
+  downgrade.
 
 ## Předávka pro Gemini
 - Projekt je plně implementován, otestován a zkompilován. Všechny požadavky zadání byly splněny.

@@ -61,8 +61,9 @@ Hotové části:
 
 Otevřené technické dluhy (ne blokery):
 
-- Room používá `fallbackToDestructiveMigration()`; před produkční verzí doplnit
-  skutečné migrace.
+- Room má export schémat (`exportSchema = true`, `room.schemaLocation`) a
+  verzované migrace přes `ObchodnikDatabase.MIGRATIONS`; destruktivní migrace
+  jen pro downgrade. Baseline schéma je v `app/schemas`.
 - Fonty jsou zatím systémové; skutečné Hanken/JetBrains Mono přes Downloadable
   Fonts (viz `ui/theme/Type.kt`).
 

@@ -42,7 +42,10 @@ class AppContainer(
             context.applicationContext,
             ObchodnikDatabase::class.java,
             "obchodnik.db",
-        ).fallbackToDestructiveMigration().build()
+        )
+            .addMigrations(*ObchodnikDatabase.MIGRATIONS)
+            .fallbackToDestructiveMigrationOnDowngrade()
+            .build()
 
     private val okHttpClient: OkHttpClient =
         OkHttpClient.Builder()

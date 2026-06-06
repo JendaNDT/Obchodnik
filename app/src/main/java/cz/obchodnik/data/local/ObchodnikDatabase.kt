@@ -2,6 +2,7 @@ package cz.obchodnik.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
 import cz.obchodnik.data.local.dao.AlertDao
 import cz.obchodnik.data.local.dao.AssetDao
 import cz.obchodnik.data.local.dao.HistoryDao
@@ -22,7 +23,7 @@ import cz.obchodnik.data.local.entity.QuoteEntity
         AlertEntity::class,
     ],
     version = 2,
-    exportSchema = false,
+    exportSchema = true,
 )
 abstract class ObchodnikDatabase : RoomDatabase() {
     abstract fun assetDao(): AssetDao
@@ -30,4 +31,14 @@ abstract class ObchodnikDatabase : RoomDatabase() {
     abstract fun historyDao(): HistoryDao
     abstract fun holdingDao(): HoldingDao
     abstract fun alertDao(): AlertDao
+
+    companion object {
+        /**
+         * Schema migrations applied on upgrade. When an entity changes, bump the
+         * @Database version, add the corresponding Migration here and commit the
+         * newly generated schemas/<version>.json. Do not use destructive
+         * migration for upgrades once the app ships real user data.
+         */
+        val MIGRATIONS: Array<Migration> = arrayOf()
+    }
 }
