@@ -1,0 +1,23 @@
+{
+  "name": "Crude Oil Prices WTI",
+  "interval": "daily",
+  "unit": "dollars per barrel",
+  "data": [
+    {
+      "date": "2026-06-05",
+      "value": "72.34"
+    },
+    {
+      "date": "2026-06-04",
+      "value": "71.20"
+    },
+    {
+      "date": "2026-06-03",
+      "value": "."
+    },
+    {
+      "date": "2026-06-02",
+      "value": "70.50"
+    }
+  ]
+}

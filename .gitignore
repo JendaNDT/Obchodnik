@@ -1,0 +1,35 @@
+# Gradle
+.gradle/
+build/
+*/build/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+
+# Local machine configuration
+local.properties
+*.keystore
+*.jks
+
+# Android build outputs
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Kotlin / Java
+*.class
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
+
+
+# Kotlin build cache
+.kotlin/
+
+# Temporary unzipped design handoff (canonical is CryptoWidget.zip)
+temp_unzipped/

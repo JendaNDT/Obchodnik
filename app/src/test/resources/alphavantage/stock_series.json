@@ -1,0 +1,32 @@
+{
+  "Meta Data": {
+    "1. Information": "Daily Prices (open, high, low, close, volume) and Volumes",
+    "2. Symbol": "SPY",
+    "3. Last Refreshed": "2026-06-05",
+    "4. Output Size": "Compact",
+    "5. Time Zone": "US/Eastern"
+  },
+  "Time Series (Daily)": {
+    "2026-06-05": {
+      "1. open": "529.12",
+      "2. high": "530.00",
+      "3. low": "528.00",
+      "4. close": "529.12",
+      "5. volume": "1234567"
+    },
+    "2026-06-04": {
+      "1. open": "526.00",
+      "2. high": "528.50",
+      "3. low": "525.00",
+      "4. close": "527.92",
+      "5. volume": "2345678"
+    },
+    "2026-06-03": {
+      "1. open": "524.00",
+      "2. high": "526.00",
+      "3. low": "523.00",
+      "4. close": "525.00",
+      "5. volume": "3456789"
+    }
+  }
+}

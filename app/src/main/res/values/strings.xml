@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Obchodník</string>
+
+    <!-- Navigation / top level -->
+    <string name="nav_markets">Trh</string>
+    <string name="nav_portfolio">Portfolio</string>
+    <string name="nav_fng">Index</string>
+    <string name="nav_alerts">Alerty</string>
+    <string name="settings_title">Nastavení</string>
+    <string name="action_settings">Nastavení</string>
+    <string name="action_search">Hledat</string>
+
+    <!-- Placeholder shown by the initial skeleton screen -->
+    <string name="loading_data">Načítám data…</string>
+</resources>
