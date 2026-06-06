@@ -50,6 +50,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cz.obchodnik.core.format.MarketFormatters
+import cz.obchodnik.domain.AssetType
 import cz.obchodnik.ui.components.AssetIcon
 import cz.obchodnik.ui.components.Change
 import cz.obchodnik.ui.components.ObchodnikCard
@@ -335,6 +336,20 @@ private fun MarketAssetRow(
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 12.sp,
             )
+            if (row.asset.type == AssetType.INDEX) {
+                Text(
+                    text = "≈ ETF",
+                    color = c.text3,
+                    fontFamily = JetBrainsMono,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 9.sp,
+                    modifier = Modifier
+                        .padding(top = 3.dp)
+                        .background(c.surface2, RoundedCornerShape(Obchodnik.radii.chip))
+                        .border(BorderStroke(1.dp, c.border), RoundedCornerShape(Obchodnik.radii.chip))
+                        .padding(horizontal = 5.dp, vertical = 1.dp),
+                )
+            }
         }
         Box(
             modifier = Modifier
