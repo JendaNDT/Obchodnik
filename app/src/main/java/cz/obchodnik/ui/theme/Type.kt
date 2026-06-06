@@ -5,24 +5,43 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.googlefonts.Font
+import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.unit.sp
+import cz.obchodnik.R
 
 /**
  * Typography.
  *
  * The design package specifies Hanken Grotesk (UI) + JetBrains Mono (numbers).
- * For now we use the built-in sans/monospace families so the project builds and
- * runs with zero bundled font binaries and no Google Fonts certificate file.
- *
- * TODO(fonts): switch to the real fonts via Android Studio →
- * res/font → "Add font" → Downloadable Font → pick "Hanken Grotesk" and
- * "JetBrains Mono". Android Studio auto-generates res/values/font_certs.xml.
- * Then set [HankenGrotesk] / [JetBrainsMono] to those FontFamily definitions.
+ * Both are loaded via Downloadable Fonts (Google Fonts provider). If the
+ * provider is unavailable the system falls back to the default platform font,
+ * so the app keeps working without bundled font binaries.
  */
-val HankenGrotesk: FontFamily = FontFamily.SansSerif
+private val googleFontProvider = GoogleFont.Provider(
+    providerAuthority = "com.google.android.gms.fonts",
+    providerPackage = "com.google.android.gms",
+    certificates = R.array.com_google_android_gms_fonts_certs,
+)
+
+private val hankenGroteskFont = GoogleFont("Hanken Grotesk")
+private val jetBrainsMonoFont = GoogleFont("JetBrains Mono")
+
+val HankenGrotesk: FontFamily = FontFamily(
+    Font(googleFont = hankenGroteskFont, fontProvider = googleFontProvider, weight = FontWeight.Normal),
+    Font(googleFont = hankenGroteskFont, fontProvider = googleFontProvider, weight = FontWeight.Medium),
+    Font(googleFont = hankenGroteskFont, fontProvider = googleFontProvider, weight = FontWeight.SemiBold),
+    Font(googleFont = hankenGroteskFont, fontProvider = googleFontProvider, weight = FontWeight.Bold),
+    Font(googleFont = hankenGroteskFont, fontProvider = googleFontProvider, weight = FontWeight.ExtraBold),
+)
 
 /** Monospace family for prices, percentages and tickers (prevents digit jitter). */
-val JetBrainsMono: FontFamily = FontFamily.Monospace
+val JetBrainsMono: FontFamily = FontFamily(
+    Font(googleFont = jetBrainsMonoFont, fontProvider = googleFontProvider, weight = FontWeight.Normal),
+    Font(googleFont = jetBrainsMonoFont, fontProvider = googleFontProvider, weight = FontWeight.Medium),
+    Font(googleFont = jetBrainsMonoFont, fontProvider = googleFontProvider, weight = FontWeight.SemiBold),
+    Font(googleFont = jetBrainsMonoFont, fontProvider = googleFontProvider, weight = FontWeight.Bold),
+)
 
 fun appTypography(ui: FontFamily = HankenGrotesk): Typography {
     val base = Typography()
