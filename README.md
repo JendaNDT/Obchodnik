@@ -8,7 +8,7 @@ aktualizace, moderní tmavý design.
 - Jazyk UI: čeština
 - Platforma: Android (Jetpack Compose + Glance)
 - Data: CoinGecko (krypto + tokenizované kovy), Alpha Vantage (komodity, indexy)
-- Stav: všech 11 kroků hotových, zkompilováno a otestováno (2026-06-06)
+- Stav: verze 1.0 (kroky 1–11) + vylepšení po 1.0 (Room migrace, záloha dat, šifrování klíčů, fonty, chytrý widget, přístupnost); build i unit testy OK (2026-06-06)
 
 ## Jak projekt otevřít a spustit
 
@@ -46,7 +46,7 @@ a klienti je používají v hlavičkách/queries.
 
 Viz:
 
-- `GEMINI_HANDOFF.md` — stručná předávka pro další AI.
+- `HANDOFF.md` — stručná předávka pro další AI (pokračování v Codexu).
 - `PROGRESS.md` — aktuální snapshot hotové práce.
 - `ROADMAP.md` — číslované kroky.
 - `IMPLEMENTATION_PLAN.md` — detailní architektura a akceptační kritéria.
@@ -64,10 +64,21 @@ Hotovo (všech 11 kroků):
 - Druhý zdroj dat Alpha Vantage (komodity + indexy přes ETF).
 - Portfolio, Alerty, Fear & Greed detail, Onboarding, prázdné/chybové stavy.
 
-Otevřené technické dluhy: fonty jsou zatím systémové (viz níže). Room migrace
-mají hotovou infrastrukturu (export schémat + verzované migrace místo
-destruktivní při upgradu); instrumentované migrační testy přijdou s první
-reálnou migrací.
+Vylepšení po 1.0:
+
+- Room: export schémat + verzované migrace (konec destruktivní migrace při upgradu).
+- Záloha dat: export/import watchlistu, portfolia, alertů a nastavení do JSON
+  (Nastavení → Záloha dat, přes Storage Access Framework).
+- Bezpečnost: API klíče šifrované přes Android Keystore (AES-256-GCM).
+- Detail: stáří dat a zdroj, poznámky „přibližně přes ETF" / denní komodity;
+  v seznamu Trh badge „≈ ETF" u indexů.
+- Přístupnost: contentDescription pro grafy, gauge a sparkline (TalkBack).
+- Widget: tap na řádek otevře detail aktiva, tlačítko „↻ Obnovit".
+- Fonty: Hanken Grotesk + JetBrains Mono přes Downloadable Fonts.
+
+Otevřené technické dluhy: instrumentované Room migrační testy (`MigrationTestHelper`)
+přijdou s první reálnou migrací; volitelně vyřadit API klíče z exportu zálohy;
+případně crash reporting (Sentry — vyžaduje účet a DSN).
 
 ## Design handoff
 
@@ -90,8 +101,9 @@ Prototyp není produkční kód a nepřebírá se přímo. Při rozporu platí:
 
 ## Poznámka k fontům
 
-Design používá Hanken Grotesk + JetBrains Mono. Aplikace zatím běží na vestavěných
-fontech (sans/monospace), aby projekt šel sestavit bez přibalených binárek.
-Skutečné fonty se přidají jedním klikem přes Android Studio → `res/font` →
-Add font → Downloadable Font (vygeneruje i `font_certs.xml`). Detail v
-`app/src/main/java/cz/obchodnik/ui/theme/Type.kt`.
+Design používá Hanken Grotesk + JetBrains Mono. Oba se načítají přes Downloadable
+Fonts (Google Fonts provider) — definováno v
+`app/src/main/java/cz/obchodnik/ui/theme/Type.kt`, certifikáty v
+`app/src/main/res/values/font_certs.xml` (oficiální soubor z Google sample).
+Pokud na zařízení nejsou Google Play Services, appka graceful spadne na
+systémové písmo (žádný pád).

@@ -111,6 +111,27 @@ Datum: 2026-06-06
   - Upravena `MainActivity.kt` pro integraci spodního navigačního panelu `BottomNavigationBar` (4 záložky: Trh, Portfolio, F&G, Alerty) na top-level obrazovkách, a ochranu navigačního stromu před dokončením onboardingu.
   - Doplněny unit testy pro výpočetní logiku portfolia (`PortfolioViewModelTest`) a správu alertů (`AlertsViewModelTest`).
 
+## Vylepšení po 1.0 (2026-06-06, pokračování v Codexu)
+- Room: zapnut export schémat (`app/schemas`, `exportSchema = true`) a verzované
+  migrace přes `ObchodnikDatabase.MIGRATIONS`; odebrána destruktivní migrace při
+  upgradu (zůstává jen pro downgrade). Baseline schéma `schemas/2.json`.
+- Git + GitHub: projekt zaverzován a nahrán na https://github.com/JendaNDT/Obchodnik
+- Záloha dat: `data/backup/BackupModels.kt` + `BackupRepository.kt` (export/import
+  watchlistu, pozic, alertů a uživatelských nastavení do JSON) a UI sekce „Záloha
+  dat" v Nastavení přes Storage Access Framework; unit test serializace.
+- Bezpečnost: `core/crypto/KeystoreCrypto.kt` (AES-256-GCM přes Android Keystore);
+  `SettingsRepository` šifruje/dešifruje API klíče. Opraven deprecation
+  `Icons.Rounded.TrendingUp` → AutoMirrored.
+- Stáří/zdroj dat: `DataInfoFooter` v detailu (čas, zdroj, ETF/komoditní poznámka),
+  badge „≈ ETF" u indexů v seznamu Trh; nové formátovače `time` / `sourceLabel`.
+- Přístupnost: `contentDescription` pro cenový graf, F&G gauge, F&G historii a
+  sparkline (TalkBack).
+- Widget: tap na řádek otevře detail konkrétního aktiva (deep-link přes
+  `EXTRA_ASSET_ID`, `MainActivity` `singleTop` + `onNewIntent`), tlačítko
+  „↻ Obnovit" (`RefreshWidgetAction` → jednorázový `RefreshWorker`).
+- Fonty: Hanken Grotesk + JetBrains Mono přes Downloadable Fonts (`Type.kt`,
+  `res/values/font_certs.xml`).
+
 ## Stav
 - Verze: AGP 8.7.0, Kotlin 2.0.21, Compose BOM 2024.10.01, Glance 1.1.0,
   Gradle 8.9. Min SDK 26 / target 35.
@@ -124,12 +145,15 @@ Datum: 2026-06-06
 - Room DB je verze 2 s exportem schémat (`app/schemas`) a verzovanými
   migracemi (`ObchodnikDatabase.MIGRATIONS`); destruktivní migrace jen pro
   downgrade.
+- Vylepšení po 1.0 jsou každé samostatně commitnuté na GitHubu; build i unit
+  testy procházejí (poslední commit `4f2f9ae`, fonty).
 
-## Předávka pro Gemini
-- Projekt je plně implementován, otestován a zkompilován. Všechny požadavky zadání byly splněny.
+## Předávka
+- Verze 1.0 i vylepšení po 1.0 jsou hotové, otestované a na GitHubu. Pokračování
+  probíhá v nástroji Codex od OpenAI. Viz `HANDOFF.md`.
 
-## Další krok
-- Hotovo! Projekt předán uživateli k finálnímu testování v Android Studiu / emulátoru.
-
-## Otevřené otázky
-- Žádné, projekt je dokončen.
+## Nápady do budoucna
+- Instrumentované Room migrační testy (`MigrationTestHelper`).
+- Unit test pro `BackupRepository.import` (orchestrace importu).
+- Sentry crash reporting (vyžaduje účet + DSN).
+- Volitelně: vyřadit API klíče z exportu zálohy.

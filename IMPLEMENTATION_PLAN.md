@@ -1,12 +1,12 @@
 # Obchodník — Implementační plán
 
 Samostatný, podrobný plán pro dokončení aplikace. Napsáno tak, aby podle něj
-mohl pokračovat jiný nástroj (aktuálně Gemini AI od Google) bez další
+mohl pokračovat jiný nástroj (aktuálně Codex od OpenAI) bez další
 kontextové znalosti.
 Zdroj pravdy pro architekturu, API kontrakty a kroky. Doplňuje `AGENTS.md`
 (konvence) a `ROADMAP.md` (číslované kroky).
 
-Datum: 2026-06-06. Stav: všech 11 kroků hotových (zkompilováno a otestováno).
+Datum: 2026-06-06. Stav: verze 1.0 (kroky 1–11) hotová + vylepšení po 1.0 (viz `ROADMAP.md` a `PROGRESS.md`). Zkompilováno a otestováno.
 
 ---
 
@@ -30,7 +30,7 @@ Datum: 2026-06-06. Stav: všech 11 kroků hotových (zkompilováno a otestováno
   kombinace je ověřená a konzistentní (kap. 2).
 - API endpointy v kap. 5 jsou ověřené k 2026-06. Tvar JSON ber jako kontrakt;
   pokud se reálná odpověď liší, uprav DTO, ne doménový model.
-- Před pokračováním si přečti `GEMINI_HANDOFF.md`; je to krátká provozní
+- Před pokračováním si přečti `HANDOFF.md`; je to krátká provozní
   předávka aktuálního stavu.
 
 ### 0.1 Aktuální implementační snapshot
@@ -64,8 +64,8 @@ Otevřené technické dluhy (ne blokery):
 - Room má export schémat (`exportSchema = true`, `room.schemaLocation`) a
   verzované migrace přes `ObchodnikDatabase.MIGRATIONS`; destruktivní migrace
   jen pro downgrade. Baseline schéma je v `app/schemas`.
-- Fonty jsou zatím systémové; skutečné Hanken/JetBrains Mono přes Downloadable
-  Fonts (viz `ui/theme/Type.kt`).
+- Fonty: Hanken Grotesk + JetBrains Mono přes Downloadable Fonts (Google Fonts
+  provider) — `ui/theme/Type.kt` + `res/values/font_certs.xml`.
 
 ---
 
@@ -659,8 +659,9 @@ Každý krok: cíl → soubory → akceptační kritéria. Po každém build + t
   komunikovat, doplnit refresh při otevření a interakci s widgetem.
 - **Glance omezené UI** → sparkline ve widgetu řešit přes bitmapu; mít textový
   fallback.
-- **Fonty**: zatím systémové; skutečné Hanken/JetBrains Mono přes Downloadable
-  Fonts (AS vygeneruje `font_certs.xml`) — viz `Type.kt`.
+- **Fonty**: Hanken Grotesk + JetBrains Mono přes Downloadable Fonts; certs v
+  `res/values/font_certs.xml` (oficiální Google sample). Vyžadují Play Services,
+  jinak fallback na systémový font.
 - **API klíče v DataStore**: pro osobní appku OK; nejde o sdílené tajemství.
 
 ---

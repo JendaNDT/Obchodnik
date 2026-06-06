@@ -3,7 +3,7 @@
 ## Spolupráce s uživatelem
 
 Uživatel (Jenda) neprogramuje — má nápady, kód píše navazující AI agent
-(aktuálně Gemini AI od Google). Platí:
+(aktuálně Codex od OpenAI; dříve Gemini a Cowork/Anthropic). Platí:
 
 - **Diskuze před kódem.** Nikdy nepiš/needituj soubory bez popisu plánu a
   explicitního schválení („piš" / „ok" / „pokračuj").
@@ -26,8 +26,9 @@ Uživatel (Jenda) neprogramuje — má nápady, kód píše navazující AI agen
   Zobrazované jméno appky: „Obchodník" (v `strings.xml`).
 - Verze řízené přes `gradle/libs.versions.toml` (version catalog).
 - Min SDK 26, target/compile SDK 35. JDK 17.
-- Aktuální stav projektu: všech 11 kroků je hotových, zkompilováno a
-  otestováno (2026-06-06). Detaily jsou v `PROGRESS.md` a `GEMINI_HANDOFF.md`.
+- Aktuální stav projektu: verze 1.0 (kroky 1–11) hotová + sada vylepšení po
+  1.0 (záloha dat, šifrování klíčů, fonty, chytrý widget, přístupnost, Room
+  migrace). Build i unit testy OK. Detaily v `PROGRESS.md` a `HANDOFF.md`.
 
 ## Design tokeny
 
@@ -52,8 +53,9 @@ down `#EA3943`. Čísla v monospace (zabraňuje poskakování číslic).
   (`/Users/jenda/Library/Android/sdk`) a patří do `.gitignore`.
 - Poslední ověření proběhlo příkazem
   `./gradlew :app:assembleDebug :app:testDebugUnitTest --no-daemon`.
-- Fonty: zatím vestavěné rodiny; Google Fonts certs se nevymýšlejí ručně
-  (viz `Type.kt`).
+- Fonty: Hanken Grotesk + JetBrains Mono přes Downloadable Fonts (`Type.kt`),
+  certs v `res/values/font_certs.xml` (oficiální Google sample, nevymýšlet ručně).
+  Vyžadují Google Play Services; jinak fallback na systémové písmo.
 - Room má zapnutý export schémat (`room.schemaLocation` -> `app/schemas`,
   `exportSchema = true`) a verzované migrace; baseline je schéma verze 2.
   Destruktivní migrace je povolená jen pro *downgrade*. **Workflow při změně
