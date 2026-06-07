@@ -11,12 +11,16 @@ import cz.obchodnik.data.prefs.SettingsRepository
 import cz.obchodnik.data.repository.MarketRepository
 import cz.obchodnik.data.repository.PortfolioRepository
 import cz.obchodnik.data.repository.WatchlistRepository
+import cz.obchodnik.domain.PortfolioHistory
+import cz.obchodnik.domain.model.ChartRange
 import cz.obchodnik.domain.model.Asset
 import cz.obchodnik.domain.model.Holding
+import cz.obchodnik.domain.model.PricePoint
 import cz.obchodnik.domain.model.Quote
 import cz.obchodnik.domain.model.StaticAssetCatalog
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -33,6 +37,8 @@ data class PortfolioUiState(
     val totalPL: Double = 0.0,
     val totalPLPct: Double? = null,
     val insights: PortfolioInsights = PortfolioInsights(),
+    val historyPoints: List<PricePoint> = emptyList(),
+    val historyRange: ChartRange = ChartRange.M1,
     val currency: String = "usd",
     val allWatchlistAssets: List<Asset> = emptyList(),
     val isLoading: Boolean = false,
@@ -63,8 +69,10 @@ class PortfolioViewModel(
             combine(
                 portfolioRepository.observeHoldings(),
                 marketRepository.observeQuotes(currency),
-                watchlistRepository.observeWatchlist()
-            ) { holdings, quotes, watchlist ->
+                watchlistRepository.observeWatchlist(),
+                portfolioRepository.observeSnapshots(currency),
+                selectedRange,
+            ) { holdings, quotes, watchlist, snapshots, range ->
                 val items = holdings.mapNotNull { holding ->
                     val asset = watchlist.firstOrNull { it.id == holding.assetId }
                         ?: StaticAssetCatalog.assets.firstOrNull { it.id == holding.assetId }
@@ -93,6 +101,11 @@ class PortfolioViewModel(
                 val totalPL = totalValue - totalInvested
                 val totalPLPct = if (totalInvested > 0.0) (totalPL / totalInvested) * 100.0 else null
                 val insights = PortfolioInsightsCalculator.calculate(items, totalValue)
+                val historyPoints = PortfolioHistory.pointsForRange(
+                    snapshots = snapshots,
+                    range = range,
+                    now = System.currentTimeMillis(),
+                )
 
                 PortfolioUiState(
                     items = items,
@@ -101,6 +114,8 @@ class PortfolioViewModel(
                     totalPL = totalPL,
                     totalPLPct = totalPLPct,
                     insights = insights,
+                    historyPoints = historyPoints,
+                    historyRange = range,
                     currency = currency,
                     allWatchlistAssets = watchlist,
                     isLoading = false
@@ -112,6 +127,38 @@ class PortfolioViewModel(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = PortfolioUiState(isLoading = true)
         )
+
+    private val selectedRange = MutableStateFlow(ChartRange.M1)
+    private var lastSnapshotSignature: Pair<Long, Long>? = null
+
+    init {
+        viewModelScope.launch {
+            settingsRepository.settings
+                .map { it.currency }
+                .flatMapLatest { currency ->
+                    combine(
+                        portfolioRepository.observeHoldings(),
+                        marketRepository.observeQuotes(currency),
+                    ) { holdings, quotes -> Triple(currency, holdings, quotes) }
+                }
+                .collect { (currency, holdings, quotes) ->
+                    if (holdings.isEmpty()) return@collect
+                    var totalValue = 0.0
+                    var totalInvested = 0.0
+                    holdings.forEach { holding ->
+                        val price = quotes.firstOrNull { it.assetId == holding.assetId }?.price
+                            ?: holding.avgPrice
+                        totalValue += holding.qty * price
+                        totalInvested += holding.qty * holding.avgPrice
+                    }
+                    val day = PortfolioHistory.startOfDayMillis(System.currentTimeMillis())
+                    val signature = day to (totalValue * 100.0).toLong()
+                    if (signature == lastSnapshotSignature) return@collect
+                    lastSnapshotSignature = signature
+                    portfolioRepository.recordSnapshot(day, totalValue, totalInvested, currency)
+                }
+        }
+    }
 
     fun addPosition(assetId: String, qty: Double, avgPrice: Double) {
         viewModelScope.launch {
@@ -140,6 +187,10 @@ class PortfolioViewModel(
         viewModelScope.launch {
             portfolioRepository.delete(holding)
         }
+    }
+
+    fun selectHistoryRange(range: ChartRange) {
+        selectedRange.value = range
     }
 
     fun exportCsv(uri: Uri, state: PortfolioUiState) {

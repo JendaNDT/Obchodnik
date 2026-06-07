@@ -60,8 +60,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cz.obchodnik.core.format.MarketFormatters
 import cz.obchodnik.domain.model.Asset
+import cz.obchodnik.domain.model.ChartRange
 import cz.obchodnik.domain.model.Holding
 import cz.obchodnik.ui.components.AssetIcon
+import cz.obchodnik.ui.components.LinePriceChart
 import cz.obchodnik.ui.components.Change
 import cz.obchodnik.ui.components.ObchodnikCard
 import cz.obchodnik.ui.theme.JetBrainsMono
@@ -75,6 +77,7 @@ fun PortfolioScreen(
     onUpdatePosition: (Holding, Double, Double) -> Unit,
     onDeletePosition: (Holding) -> Unit,
     onExportCsv: (Uri) -> Unit,
+    onSelectHistoryRange: (ChartRange) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val c = Obchodnik.colors
@@ -112,6 +115,10 @@ fun PortfolioScreen(
             ) {
                 item {
                     SummaryCard(state = state)
+                }
+
+                item {
+                    HistoryCard(state = state, onSelectRange = onSelectHistoryRange)
                 }
 
                 item {
@@ -313,6 +320,88 @@ private fun InsightLine(
             fontSize = 12.sp,
             maxLines = 1,
         )
+    }
+}
+
+@Composable
+private fun HistoryCard(
+    state: PortfolioUiState,
+    onSelectRange: (ChartRange) -> Unit,
+) {
+    val c = Obchodnik.colors
+    val ranges = listOf(
+        ChartRange.W1 to "1T",
+        ChartRange.M1 to "1M",
+        ChartRange.Y1 to "1R",
+        ChartRange.ALL to "VŠE",
+    )
+    val points = state.historyPoints
+    val trendUp = (points.lastOrNull()?.price ?: 0.0) >= (points.firstOrNull()?.price ?: 0.0)
+    val lineColor = if (trendUp) c.up else c.down
+
+    ObchodnikCard(
+        modifier = Modifier.fillMaxWidth(),
+        padding = PaddingValues(14.dp),
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(
+                text = "VÝVOJ HODNOTY",
+                color = c.text3,
+                fontFamily = JetBrainsMono,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 10.sp,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
+                ranges.forEach { (range, label) ->
+                    val active = state.historyRange == range
+                    Text(
+                        text = label,
+                        color = if (active) c.onAccent else c.text2,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 11.sp,
+                        maxLines = 1,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .weight(1f)
+                            .background(
+                                color = if (active) c.accent else c.surface2,
+                                shape = RoundedCornerShape(Obchodnik.radii.chip),
+                            )
+                            .border(
+                                1.dp,
+                                if (active) c.accent else c.border,
+                                RoundedCornerShape(Obchodnik.radii.chip),
+                            )
+                            .clickable { onSelectRange(range) }
+                            .padding(vertical = 7.dp),
+                    )
+                }
+            }
+            if (points.size >= 2) {
+                LinePriceChart(
+                    points = points,
+                    color = lineColor,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(140.dp),
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(140.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "Graf se začne plnit, jakmile nasbíráme víc dní hodnot.",
+                        color = c.text3,
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 24.dp),
+                    )
+                }
+            }
+        }
     }
 }
 

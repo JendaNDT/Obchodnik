@@ -8,11 +8,13 @@ import cz.obchodnik.data.local.dao.AlertDao
 import cz.obchodnik.data.local.dao.AssetDao
 import cz.obchodnik.data.local.dao.HistoryDao
 import cz.obchodnik.data.local.dao.HoldingDao
+import cz.obchodnik.data.local.dao.PortfolioSnapshotDao
 import cz.obchodnik.data.local.dao.QuoteDao
 import cz.obchodnik.data.local.entity.AlertEntity
 import cz.obchodnik.data.local.entity.AssetEntity
 import cz.obchodnik.data.local.entity.HistoryEntity
 import cz.obchodnik.data.local.entity.HoldingEntity
+import cz.obchodnik.data.local.entity.PortfolioSnapshotEntity
 import cz.obchodnik.data.local.entity.QuoteEntity
 
 @Database(
@@ -22,8 +24,9 @@ import cz.obchodnik.data.local.entity.QuoteEntity
         HistoryEntity::class,
         HoldingEntity::class,
         AlertEntity::class,
+        PortfolioSnapshotEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
 )
 abstract class ObchodnikDatabase : RoomDatabase() {
@@ -32,6 +35,7 @@ abstract class ObchodnikDatabase : RoomDatabase() {
     abstract fun historyDao(): HistoryDao
     abstract fun holdingDao(): HoldingDao
     abstract fun alertDao(): AlertDao
+    abstract fun portfolioSnapshotDao(): PortfolioSnapshotDao
 
     companion object {
         /**
@@ -54,6 +58,24 @@ abstract class ObchodnikDatabase : RoomDatabase() {
             }
         }
 
-        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_2_3, MIGRATION_3_4)
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `portfolio_snapshots` (" +
+                        "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`dayStartMillis` INTEGER NOT NULL, " +
+                        "`totalValue` REAL NOT NULL, " +
+                        "`totalInvested` REAL NOT NULL, " +
+                        "`currency` TEXT NOT NULL)",
+                )
+                db.execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS " +
+                        "`index_portfolio_snapshots_dayStartMillis_currency` " +
+                        "ON `portfolio_snapshots` (`dayStartMillis`, `currency`)",
+                )
+            }
+        }
+
+        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
     }
 }

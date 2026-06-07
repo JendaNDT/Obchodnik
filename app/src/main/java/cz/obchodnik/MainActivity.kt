@@ -242,6 +242,7 @@ private fun ObchodnikAppContent(
                     onUpdatePosition = viewModel::updatePosition,
                     onDeletePosition = viewModel::deletePosition,
                     onExportCsv = { uri -> viewModel.exportCsv(uri, state) },
+                    onSelectHistoryRange = viewModel::selectHistoryRange,
                 )
             }
             composable("fng") {

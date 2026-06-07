@@ -27,7 +27,7 @@ class ObchodnikDatabaseMigrationTest {
 
         val db = helper.runMigrationsAndValidate(
             TEST_DB,
-            4,
+            5,
             true,
             *ObchodnikDatabase.MIGRATIONS,
         )
@@ -47,6 +47,7 @@ class ObchodnikDatabaseMigrationTest {
             assertEquals(0L, cursor.getLong(0))
             assertEquals(1L, cursor.getLong(1))
         }
+        assertEquals(0, db.queryLong("SELECT COUNT(*) FROM portfolio_snapshots"))
     }
 
     private fun SupportSQLiteDatabase.insertVersion2SeedRows() {

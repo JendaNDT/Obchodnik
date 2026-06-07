@@ -4,9 +4,11 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import cz.obchodnik.data.local.AssetLocalStore
 import cz.obchodnik.data.local.dao.AlertDao
 import cz.obchodnik.data.local.dao.HoldingDao
+import cz.obchodnik.data.local.dao.PortfolioSnapshotDao
 import cz.obchodnik.data.local.entity.AlertEntity
 import cz.obchodnik.data.local.entity.AssetEntity
 import cz.obchodnik.data.local.entity.HoldingEntity
+import cz.obchodnik.data.local.entity.PortfolioSnapshotEntity
 import cz.obchodnik.data.prefs.SettingsRepository
 import cz.obchodnik.data.repository.AlertRepository
 import cz.obchodnik.data.repository.PortfolioRepository
@@ -60,7 +62,7 @@ class BackupRepositoryImportTest {
         alertDao = FakeAlertDao()
         repository = BackupRepository(
             watchlistRepository = WatchlistRepository(assetStore),
-            portfolioRepository = PortfolioRepository(holdingDao),
+            portfolioRepository = PortfolioRepository(holdingDao, FakePortfolioSnapshotDao()),
             alertRepository = AlertRepository(alertDao),
             settingsRepository = settingsRepository,
             json = Json {
@@ -201,6 +203,12 @@ class BackupRepositoryImportTest {
 
         private fun sortedWatchlist(): List<AssetEntity> =
             assets.filter { it.inWatchlist }.sortedWith(compareBy<AssetEntity> { it.sortOrder }.thenBy { it.symbol })
+    }
+
+    private class FakePortfolioSnapshotDao : PortfolioSnapshotDao {
+        override fun observeSnapshots(currency: String): Flow<List<PortfolioSnapshotEntity>> =
+            MutableStateFlow(emptyList())
+        override suspend fun upsert(snapshot: PortfolioSnapshotEntity) {}
     }
 
     private class FakeHoldingDao : HoldingDao {

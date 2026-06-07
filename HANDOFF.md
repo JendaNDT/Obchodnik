@@ -89,6 +89,10 @@ Vylepšení po 1.0 (každé samostatný commit na GitHubu):
 - Trh: uložené vlastní pohledy watchlistu – uložení/aplikace/mazání názvem
   pojmenované kombinace filtr+řazení (`SavedMarketView`), perzistence jako JSON
   v DataStore; kryjí `SavedMarketViewSerializerTest` a `SettingsRepositorySavedViewsTest`.
+- Portfolio: graf vývoje hodnoty v čase – denní snapshoty (`portfolio_snapshots`,
+  DB v5), zápis z `RefreshWorker` i `PortfolioViewModel` (upsert na den+měnu);
+  karta s grafem a rozsahy 1T/1M/1R/VŠE; `PortfolioHistory` kryje `PortfolioHistoryTest`.
+  Hodnota v aktuální měně + kód, graf filtruje na aktuální měnu; historie ode dneška.
 - Alerty: opakované alerty – přepínač Opakovat v `AddAlertSheet`, chip v seznamu.
   Hystereze přes `armed`: opakovaný alert se po splnění odzbrojí a znovu se ozve
   až po návratu ceny za cíl. Logika v čisté `AlertEvaluator` (`AlertEvaluatorTest`),
@@ -101,7 +105,7 @@ Vylepšení po 1.0 (každé samostatný commit na GitHubu):
 
 - DI: ruční `AppContainer` (žádný Hilt/Koin), napojený přes `ObchodnikApp`.
 - Čísla v monospace (`JetBrainsMono`) kvůli layout jitteru.
-- Room: aktuální verze databáze je 4. Změna entity = zvýšit `version` v
+- Room: aktuální verze databáze je 5. Změna entity = zvýšit `version` v
   `@Database`, přidat `Migration` do `MIGRATIONS`, commitnout nový
   `app/schemas/<verze>.json`.
 - Fonty vyžadují na zařízení Google Play Services; jinak fallback na systémový
@@ -114,4 +118,3 @@ Vylepšení po 1.0 (každé samostatný commit na GitHubu):
 ## Nápady do budoucna (nezačato)
 
 - Sentry crash reporting (vyžaduje účet + DSN).
-- Pokročilejší přehledy portfolia.

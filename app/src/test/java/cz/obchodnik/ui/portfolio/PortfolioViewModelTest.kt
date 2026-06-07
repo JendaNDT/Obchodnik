@@ -6,9 +6,11 @@ import cz.obchodnik.data.local.AssetLocalStore
 import cz.obchodnik.data.local.QuoteLocalStore
 import cz.obchodnik.data.local.dao.HistoryDao
 import cz.obchodnik.data.local.dao.HoldingDao
+import cz.obchodnik.data.local.dao.PortfolioSnapshotDao
 import cz.obchodnik.data.local.entity.AssetEntity
 import cz.obchodnik.data.local.entity.HistoryEntity
 import cz.obchodnik.data.local.entity.HoldingEntity
+import cz.obchodnik.data.local.entity.PortfolioSnapshotEntity
 import cz.obchodnik.data.local.entity.QuoteEntity
 import cz.obchodnik.data.local.toEntity
 import cz.obchodnik.data.prefs.AppSettings
@@ -68,6 +70,7 @@ class PortfolioViewModelTest {
     private lateinit var marketRepository: MarketRepository
     
     private lateinit var fakeHoldingDao: FakeHoldingDao
+    private lateinit var fakeSnapshotDao: FakePortfolioSnapshotDao
     private lateinit var fakeAssetStore: FakeAssetStore
     private lateinit var fakeQuoteStore: FakeQuoteStore
 
@@ -88,10 +91,11 @@ class PortfolioViewModelTest {
         settingsRepository = SettingsRepository(dataStore)
 
         fakeHoldingDao = FakeHoldingDao()
+        fakeSnapshotDao = FakePortfolioSnapshotDao()
         fakeAssetStore = FakeAssetStore()
         fakeQuoteStore = FakeQuoteStore()
 
-        portfolioRepository = PortfolioRepository(fakeHoldingDao)
+        portfolioRepository = PortfolioRepository(fakeHoldingDao, fakeSnapshotDao)
         watchlistRepository = WatchlistRepository(fakeAssetStore)
         marketRepository = MarketRepository(
             assetStore = fakeAssetStore,
@@ -314,6 +318,18 @@ class PortfolioViewModelTest {
 
         override suspend fun deleteHolding(holding: HoldingEntity) {
             _holdings.value = _holdings.value.filter { it.id != holding.id }
+        }
+    }
+
+    private class FakePortfolioSnapshotDao : PortfolioSnapshotDao {
+        private val rows = MutableStateFlow<List<PortfolioSnapshotEntity>>(emptyList())
+        override fun observeSnapshots(currency: String): Flow<List<PortfolioSnapshotEntity>> =
+            rows.map { list -> list.filter { it.currency == currency } }
+        override suspend fun upsert(snapshot: PortfolioSnapshotEntity) {
+            val current = rows.value.toMutableList()
+            current.removeAll { it.dayStartMillis == snapshot.dayStartMillis && it.currency == snapshot.currency }
+            current.add(snapshot)
+            rows.value = current
         }
     }
 

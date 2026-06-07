@@ -101,7 +101,7 @@ class AppContainer(
         settingsStore = settingsRepository,
         json = json,
     )
-    val portfolioRepository = PortfolioRepository(database.holdingDao())
+    val portfolioRepository = PortfolioRepository(database.holdingDao(), database.portfolioSnapshotDao())
     val alertRepository = AlertRepository(database.alertDao())
 
     val backupRepository = BackupRepository(

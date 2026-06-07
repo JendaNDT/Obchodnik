@@ -41,6 +41,6 @@ Legenda: ✅ hotovo · ⏳ čeká · ✖ přeskočeno
 32. ✅ Trh: vestavěné rychlé pohledy Ruční, Roste, Padá, Krypto, Indexy
 33. ✅ Trh: uložené vlastní pohledy watchlistu (uložení/aplikace/mazání, perzistence v DataStore)
 34. ✅ Alerty: opakované alerty s hysterezí (přepínač Opakovat, re-arm po návratu ceny; DB v4)
+35. ✅ Portfolio: graf vývoje hodnoty v čase (denní snapshoty, rozsahy 1T/1M/1R/VŠE; DB v5)
 
-Nápady do budoucna: Sentry crash reporting (účet + DSN), pokročilejší přehledy
-portfolia.
+Nápady do budoucna: Sentry crash reporting (účet + DSN).

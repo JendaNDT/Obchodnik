@@ -4,6 +4,7 @@ import cz.obchodnik.data.local.entity.AlertEntity
 import cz.obchodnik.data.local.entity.AssetEntity
 import cz.obchodnik.data.local.entity.HoldingEntity
 import cz.obchodnik.data.local.entity.HistoryEntity
+import cz.obchodnik.data.local.entity.PortfolioSnapshotEntity
 import cz.obchodnik.data.local.entity.QuoteEntity
 import cz.obchodnik.domain.AssetType
 import cz.obchodnik.domain.model.Asset
@@ -12,6 +13,7 @@ import cz.obchodnik.domain.model.ChartRange
 import cz.obchodnik.domain.model.DataProvider
 import cz.obchodnik.domain.model.Holding
 import cz.obchodnik.domain.model.PriceAlert
+import cz.obchodnik.domain.model.PortfolioSnapshot
 import cz.obchodnik.domain.model.PricePoint
 import cz.obchodnik.domain.model.Quote
 import kotlinx.serialization.encodeToString
@@ -148,3 +150,21 @@ fun HistoryEntity.toPricePoints(json: Json): List<PricePoint> =
 
 fun HistoryEntity.toCandles(json: Json): List<Candle> =
     runCatching { json.decodeFromString<List<Candle>>(pointsJson) }.getOrDefault(emptyList())
+
+fun PortfolioSnapshotEntity.toDomain(): PortfolioSnapshot =
+    PortfolioSnapshot(
+        id = id,
+        dayStartMillis = dayStartMillis,
+        totalValue = totalValue,
+        totalInvested = totalInvested,
+        currency = currency,
+    )
+
+fun PortfolioSnapshot.toEntity(): PortfolioSnapshotEntity =
+    PortfolioSnapshotEntity(
+        id = id,
+        dayStartMillis = dayStartMillis,
+        totalValue = totalValue,
+        totalInvested = totalInvested,
+        currency = currency,
+    )

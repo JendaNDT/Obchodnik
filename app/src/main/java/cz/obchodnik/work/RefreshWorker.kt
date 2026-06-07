@@ -15,6 +15,7 @@ import cz.obchodnik.MainActivity
 import cz.obchodnik.ObchodnikApp
 import cz.obchodnik.core.format.MarketFormatters
 import cz.obchodnik.domain.AlertEvaluator
+import cz.obchodnik.domain.PortfolioHistory
 import cz.obchodnik.domain.model.StaticAssetCatalog
 import cz.obchodnik.widget.ObchodnikWidget
 import kotlinx.coroutines.flow.first
@@ -30,17 +31,23 @@ class RefreshWorker(
         val watchlistRepository = app.container.watchlistRepository
         val marketRepository = app.container.marketRepository
         val alertRepository = app.container.alertRepository
+        val portfolioRepository = app.container.portfolioRepository
 
         return try {
             val settings = settingsRepository.settings.first()
             val watchlist = watchlistRepository.watchlist()
             val activeAlerts = alertRepository.enabledAlerts()
+            val holdings = portfolioRepository.observeHoldings().first()
 
-            // Combine watchlist assets and any assets with active alerts to ensure we get fresh prices for alerts
+            // Combine watchlist assets, alert assets and portfolio assets so all have fresh prices.
             val alertAssets = activeAlerts.mapNotNull { alert ->
                 StaticAssetCatalog.assets.find { it.id == alert.assetId }
             }
-            val allAssetsToRefresh = (watchlist + alertAssets).distinctBy { it.id }
+            val holdingAssets = holdings.mapNotNull { holding ->
+                watchlist.find { it.id == holding.assetId }
+                    ?: StaticAssetCatalog.assets.find { it.id == holding.assetId }
+            }
+            val allAssetsToRefresh = (watchlist + alertAssets + holdingAssets).distinctBy { it.id }
 
             if (allAssetsToRefresh.isNotEmpty()) {
                 val currency = settings.currency
@@ -77,6 +84,23 @@ class RefreshWorker(
                             message = "Cena aktiva $assetSymbol $direction $formattedTarget (aktuálně $formattedCurrent)."
                         )
                     }
+                }
+
+                if (holdings.isNotEmpty()) {
+                    var totalValue = 0.0
+                    var totalInvested = 0.0
+                    for (holding in holdings) {
+                        val price = marketRepository.cachedQuote(holding.assetId, currency)?.price
+                            ?: holding.avgPrice
+                        totalValue += holding.qty * price
+                        totalInvested += holding.qty * holding.avgPrice
+                    }
+                    portfolioRepository.recordSnapshot(
+                        dayStartMillis = PortfolioHistory.startOfDayMillis(System.currentTimeMillis()),
+                        totalValue = totalValue,
+                        totalInvested = totalInvested,
+                        currency = currency,
+                    )
                 }
             }
 
