@@ -46,7 +46,7 @@ a klienti je používají v hlavičkách/queries.
 
 Viz:
 
-- `HANDOFF.md` — stručná předávka pro další AI (pokračování v Coworku).
+- `HANDOFF.md` — stručná předávka pro další AI (pokračování v Antigravity od Google).
 - `PROGRESS.md` — aktuální snapshot hotové práce.
 - `ROADMAP.md` — číslované kroky.
 - `IMPLEMENTATION_PLAN.md` — detailní architektura a akceptační kritéria.
@@ -83,6 +83,9 @@ Vylepšení po 1.0:
 - Trh: ruční řazení watchlistu, lokální filtr a řazení podle růstu, poklesu,
   názvu nebo ceny; vestavěné rychlé pohledy Ruční/Roste/Padá/Krypto/Indexy.
 - Widget: režimy Vyvážený, Ceny a Grafy.
+- Trh: uložené vlastní pohledy watchlistu (pojmenovaná kombinace filtr+řazení).
+- Alerty: opakované alerty s hysterezí (re-arm po návratu ceny za cíl).
+- Portfolio: graf vývoje hodnoty v čase (denní snapshoty, rozsahy 1T/1M/1R/VŠE).
 
 Otevřené nápady: žádné — celý plánovaný backlog je hotový (uložené pohledy
 watchlistu, opakované alerty i graf vývoje hodnoty portfolia). Sentry crash

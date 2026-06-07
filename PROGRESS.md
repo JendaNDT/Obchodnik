@@ -111,7 +111,7 @@ Datum: 2026-06-07
   - Upravena `MainActivity.kt` pro integraci spodního navigačního panelu `BottomNavigationBar` (4 záložky: Trh, Portfolio, F&G, Alerty) na top-level obrazovkách, a ochranu navigačního stromu před dokončením onboardingu.
   - Doplněny unit testy pro výpočetní logiku portfolia (`PortfolioViewModelTest`) a správu alertů (`AlertsViewModelTest`).
 
-## Vylepšení po 1.0 (2026-06-07, pokračování v Coworku)
+## Vylepšení po 1.0 (2026-06-07)
 - Room: zapnut export schémat (`app/schemas`, `exportSchema = true`) a verzované
   migrace přes `ObchodnikDatabase.MIGRATIONS`; odebrána destruktivní migrace při
   upgradu (zůstává jen pro downgrade). Baseline schéma `schemas/2.json`.
@@ -197,9 +197,10 @@ Datum: 2026-06-07
   vestavěné rychlé pohledy watchlistu a odpovídající dokumentační aktualizace.
 
 ## Předávka
-- Verze 1.0 i vylepšení po 1.0 jsou hotové, otestované a na GitHubu; lokální
-  pracovní strom má navíc rozpracovaný checkpoint rychlých pohledů watchlistu.
-  Pokračování probíhá v nástroji Cowork od Anthropic. Viz `HANDOFF.md`.
+- Verze 1.0 i veškerá vylepšení po 1.0 (včetně uložených pohledů watchlistu,
+  opakovaných alertů a grafu vývoje hodnoty portfolia) jsou hotové, otestované
+  a pushnuté na GitHub; pracovní strom je čistý, DB je na verzi 5. Další úpravy
+  pokračují v nástroji Antigravity od Google. Viz `HANDOFF.md`.
 
 ## Nápady do budoucna
 Backlog je hotový, žádné otevřené nápady.

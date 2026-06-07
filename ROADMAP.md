@@ -1,6 +1,6 @@
 # ROADMAP — Obchodník
 
-Verze 1.0 (kroky 1–11) hotová. Pokračování v Coworku — viz „Vylepšení po 1.0" níže.
+Verze 1.0 (kroky 1–11) hotová. Pokračování v Antigravity od Google — viz „Vylepšení po 1.0" níže.
 
 1. ✅ Kostra projektu (Gradle, témata/barvy, MainActivity, ikona, docs)
 2. ✅ Datová vrstva CoinGecko (modely, Retrofit, search/ceny/historie, testy)
@@ -16,7 +16,7 @@ Verze 1.0 (kroky 1–11) hotová. Pokračování v Coworku — viz „Vylepšen�
 
 Legenda: ✅ hotovo · ⏳ čeká · ✖ přeskočeno
 
-## Vylepšení po 1.0 (pokračování v Coworku)
+## Vylepšení po 1.0
 
 12. ✅ Room: export schémat + verzované migrace (konec destruktivní migrace)
 13. ✅ Git + GitHub repo (JendaNDT/Obchodnik)

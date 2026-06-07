@@ -1,7 +1,7 @@
 # HANDOFF — Obchodník
 
-Předávka projektu pro pokračování ve vývoji. Aktuálně se pokračuje v nástroji
-**Cowork od Anthropic**. (Dříve: Gemini, Cowork/Anthropic a Codex od OpenAI.)
+Předávka projektu pro pokračování ve vývoji. Další úpravy pokračují v nástroji
+**Antigravity od Google**. (Dříve: Cowork od Anthropic, Gemini a Codex od OpenAI.)
 
 Datum poslední aktualizace: 2026-06-07.
 

@@ -3,8 +3,8 @@
 ## Spolupráce s uživatelem
 
 Uživatel (Jenda) neprogramuje — má nápady, kód píše navazující AI agent.
-Aktuální pokračování má probíhat v nástroji Cowork od Anthropic
-(dříve Gemini, Cowork/Anthropic a Codex od OpenAI). Platí:
+Aktuální pokračování má probíhat v nástroji Antigravity od Google
+(dříve Cowork od Anthropic, Gemini a Codex od OpenAI). Platí:
 
 - **Diskuze před kódem.** Nikdy nepiš/needituj soubory bez popisu plánu a
   explicitního schválení („piš" / „ok" / „pokračuj").
@@ -31,7 +31,9 @@ Aktuální pokračování má probíhat v nástroji Cowork od Anthropic
   vylepšení po 1.0 (Room migrace, záloha dat, šifrování klíčů, fonty,
   chytrý widget, přístupnost, stale-data notices, alert history, editace
   portfolia, CSV export, portfolio insights, filtrování/řazení watchlistu,
-  režimy widgetu, SMA indikátory, alert z detailu a rychlé alert šablony).
+  režimy widgetu, SMA indikátory, alert z detailu, rychlé alert šablony,
+  uložené pohledy watchlistu, opakované alerty s hysterezí a graf vývoje
+  hodnoty portfolia).
   Build i unit testy OK. Detaily v `PROGRESS.md` a `HANDOFF.md`.
 
 ## Design tokeny
@@ -62,7 +64,7 @@ down `#EA3943`. Čísla v monospace (zabraňuje poskakování číslic).
   certs v `res/values/font_certs.xml` (oficiální Google sample, nevymýšlet ručně).
   Vyžadují Google Play Services; jinak fallback na systémové písmo.
 - Room má zapnutý export schémat (`room.schemaLocation` -> `app/schemas`,
-  `exportSchema = true`) a verzované migrace; aktuální DB verze je 3.
+  `exportSchema = true`) a verzované migrace; aktuální DB verze je 5.
   Destruktivní migrace je povolená jen pro *downgrade*. **Workflow při změně
   entity:** zvyš `version` v `@Database`, přidej `Migration` do
   `ObchodnikDatabase.MIGRATIONS`, commitni nový `app/schemas/<verze>.json`.

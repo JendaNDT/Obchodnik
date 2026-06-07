@@ -1,7 +1,7 @@
 # Obchodník — Implementační plán
 
 Samostatný, podrobný plán pro dokončení aplikace. Napsáno tak, aby podle něj
-mohl pokračovat jiný nástroj (aktuálně Cowork od Anthropic) bez další
+mohl pokračovat jiný nástroj (aktuálně Antigravity od Google) bez další
 kontextové znalosti.
 Zdroj pravdy pro architekturu, API kontrakty a kroky. Doplňuje `AGENTS.md`
 (konvence) a `ROADMAP.md` (číslované kroky).
