@@ -148,6 +148,9 @@ Datum: 2026-06-07
 - Portfolio CSV: obrazovka Portfolio má export přes Storage Access Framework;
   `PortfolioCsvExporter` vytváří CSV se symbolem, názvem, množstvím, nákupní a
   aktuální cenou, hodnotou, investicí, P/L a měnou; formát kryje unit test.
+- Trh: watchlist má lokální filtr podle symbolu/názvu a režimy řazení `Ručně`,
+  `Růst`, `Pokles`, `Název` a `Cena`; čistou transformaci kryje
+  `MarketListTransformerTest`.
 
 ## Stav
 - Verze: AGP 8.7.0, Kotlin 2.0.21, Compose BOM 2024.10.01, Glance 1.1.0,
@@ -158,7 +161,7 @@ Datum: 2026-06-07
 - `./gradlew :app:testDebugUnitTest --no-daemon` prošlo.
 - Kombinované ověření
   `./gradlew :app:testDebugUnitTest :app:assembleDebug --no-daemon` prošlo
-  2026-06-07 po dokončení exportu portfolia do CSV.
+  2026-06-07 po dokončení filtrování a řazení watchlistu.
 - `./gradlew :app:assembleDebugAndroidTest --no-daemon` prošlo 2026-06-07
   jako kompilace instrumentovaných testů.
 - Room DB je verze 3 s exportem schémat (`app/schemas`) a verzovanými
@@ -174,6 +177,6 @@ Datum: 2026-06-07
 
 ## Nápady do budoucna
 - Sentry crash reporting (vyžaduje účet + DSN).
-- Pokročilejší filtrování a seskupování watchlistu.
 - Rozšířené grafové indikátory.
 - Pokročilejší přehledy portfolia.
+- Uložené pohledy watchlistu.

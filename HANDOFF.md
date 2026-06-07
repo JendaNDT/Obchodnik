@@ -70,7 +70,9 @@ Vylepšení po 1.0 (každé samostatný commit na GitHubu):
 - Portfolio: existující pozice lze editovat.
 - Portfolio: export pozic a P/L do CSV přes systémový výběr souboru; formát
   kryje `PortfolioCsvExporterTest`.
-- Trh: watchlist lze ručně řadit v kategorii „Vše".
+- Trh: watchlist lze ručně řadit v kategorii „Vše"; navíc má lokální filtr a
+  řazení podle růstu, poklesu, názvu nebo ceny. Transformaci kryje
+  `MarketListTransformerTest`.
 - Widget: konfigurace má režimy `Vyvážený`, `Ceny` a `Grafy`.
 - Detail/Trh: klikací dialog vysvětluje ETF zástupce, denní komoditní data a
   měnový dopočet.
@@ -92,6 +94,6 @@ Vylepšení po 1.0 (každé samostatný commit na GitHubu):
 ## Nápady do budoucna (nezačato)
 
 - Sentry crash reporting (vyžaduje účet + DSN).
-- Pokročilejší filtrování a seskupování watchlistu.
 - Rozšířené grafové indikátory.
 - Pokročilejší přehledy portfolia.
+- Uložené pohledy watchlistu.
