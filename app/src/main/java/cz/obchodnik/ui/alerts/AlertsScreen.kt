@@ -317,17 +317,23 @@ private fun EmptyAlerts(onAddClick: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AddAlertSheet(
+fun AddAlertSheet(
     watchlist: List<Asset>,
     currency: String,
+    initialAssetId: String? = null,
+    initialTarget: Double? = null,
     onDismiss: () -> Unit,
     onConfirm: (String, Boolean, Double) -> Unit,
 ) {
     val c = Obchodnik.colors
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    var selectedAsset by remember { mutableStateOf<Asset?>(watchlist.firstOrNull()) }
-    var targetPriceString by remember { mutableStateOf("") }
+    var selectedAsset by remember(watchlist, initialAssetId) {
+        mutableStateOf(watchlist.firstOrNull { it.id == initialAssetId } ?: watchlist.firstOrNull())
+    }
+    var targetPriceString by remember(initialTarget) {
+        mutableStateOf(initialTarget?.takeIf { it > 0.0 }?.toString().orEmpty())
+    }
     var isAbove by remember { mutableStateOf(true) }
 
     var expanded by remember { mutableStateOf(false) }

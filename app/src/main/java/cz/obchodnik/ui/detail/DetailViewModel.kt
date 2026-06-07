@@ -6,10 +6,12 @@ import androidx.lifecycle.viewModelScope
 import cz.obchodnik.ObchodnikApp
 import cz.obchodnik.core.Result
 import cz.obchodnik.data.prefs.SettingsRepository
+import cz.obchodnik.data.repository.AlertRepository
 import cz.obchodnik.data.repository.MarketRepository
 import cz.obchodnik.data.repository.WatchlistRepository
 import cz.obchodnik.domain.model.Asset
 import cz.obchodnik.domain.model.ChartRange
+import cz.obchodnik.domain.model.PriceAlert
 import cz.obchodnik.domain.model.StaticAssetCatalog
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,6 +25,7 @@ class DetailViewModel(
     private val watchlistRepository: WatchlistRepository,
     private val marketRepository: MarketRepository,
     private val settingsRepository: SettingsRepository,
+    private val alertRepository: AlertRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(DetailUiState())
     val uiState: StateFlow<DetailUiState> = _uiState.asStateFlow()
@@ -49,6 +52,23 @@ class DetailViewModel(
 
     fun toggleSma30() {
         _uiState.update { it.copy(showSma30 = !it.showSma30) }
+    }
+
+    fun addAlert(assetId: String, above: Boolean, target: Double) {
+        viewModelScope.launch {
+            alertRepository.save(
+                PriceAlert(
+                    id = 0,
+                    assetId = assetId,
+                    above = above,
+                    target = target,
+                    enabled = true,
+                    triggeredAt = null,
+                    triggeredPrice = null,
+                    triggeredCurrency = null,
+                ),
+            )
+        }
     }
 
     fun toggleWatch() {
@@ -151,6 +171,7 @@ class DetailViewModel(
                         watchlistRepository = app.container.watchlistRepository,
                         marketRepository = app.container.marketRepository,
                         settingsRepository = app.container.settingsRepository,
+                        alertRepository = app.container.alertRepository,
                     ) as T
                 }
             }

@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import cz.obchodnik.core.format.MarketFormatters
 import cz.obchodnik.domain.AssetType
 import cz.obchodnik.domain.model.ChartRange
+import cz.obchodnik.ui.alerts.AddAlertSheet
 import cz.obchodnik.ui.components.AssetIcon
 import cz.obchodnik.ui.components.CandlePriceChart
 import cz.obchodnik.ui.components.Change
@@ -64,12 +65,30 @@ fun DetailScreen(
     onRange: (ChartRange) -> Unit,
     onToggleSma7: () -> Unit,
     onToggleSma30: () -> Unit,
+    onAddAlert: (String, Boolean, Double) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val c = Obchodnik.colors
     var dataInfoAssetType by remember { mutableStateOf<AssetType?>(null) }
+    var showAlertSheet by remember { mutableStateOf(false) }
     dataInfoAssetType?.let { assetType ->
         DataApproximationDialog(assetType = assetType, onDismiss = { dataInfoAssetType = null })
+    }
+    if (showAlertSheet) {
+        val asset = state.asset
+        if (asset != null) {
+            AddAlertSheet(
+                watchlist = listOf(asset),
+                currency = state.currency,
+                initialAssetId = asset.id,
+                initialTarget = state.quote?.price,
+                onDismiss = { showAlertSheet = false },
+                onConfirm = { assetId, above, target ->
+                    onAddAlert(assetId, above, target)
+                    showAlertSheet = false
+                },
+            )
+        }
     }
 
     Column(
@@ -83,6 +102,7 @@ fun DetailScreen(
             inWatchlist = state.inWatchlist,
             onBack = onBack,
             onToggleWatch = onToggleWatch,
+            onAddAlert = { showAlertSheet = true },
         )
         if (state.isLoading) {
             LinearProgressIndicator(Modifier.fillMaxWidth(), color = c.accent, trackColor = c.surface)
@@ -248,6 +268,7 @@ private fun DetailTopBar(
     inWatchlist: Boolean,
     onBack: () -> Unit,
     onToggleWatch: () -> Unit,
+    onAddAlert: () -> Unit,
 ) {
     val c = Obchodnik.colors
     Row(
@@ -273,7 +294,7 @@ private fun DetailTopBar(
                 tint = if (inWatchlist) c.accent else c.text2,
             )
         }
-        IconButton(onClick = { }) {
+        IconButton(onClick = onAddAlert) {
             Icon(Icons.Rounded.Notifications, contentDescription = "Alert", tint = c.text2)
         }
     }

@@ -77,14 +77,15 @@ Vylepšení po 1.0:
 - Přístupnost: contentDescription pro grafy, gauge a sparkline (TalkBack).
 - Widget: tap na řádek otevře detail aktiva, tlačítko „↻ Obnovit".
 - Fonty: Hanken Grotesk + JetBrains Mono přes Downloadable Fonts.
-- Alerty: historie spuštění včetně ceny a měny, možnost znovu aktivovat.
+- Alerty: historie spuštění včetně ceny a měny, možnost znovu aktivovat, nový
+  alert přímo z detailu aktiva.
 - Portfolio: editace existujících pozic a export pozic s P/L do CSV.
 - Trh: ruční řazení watchlistu, lokální filtr a řazení podle růstu, poklesu,
   názvu nebo ceny.
 - Widget: režimy Vyvážený, Ceny a Grafy.
 
 Otevřené nápady: crash reporting (Sentry — vyžaduje účet a DSN), pokročilejší
-přehledy portfolia, uložené pohledy watchlistu a alert z detailu aktiva.
+přehledy portfolia, uložené pohledy watchlistu a rychlé šablony alertů.
 
 ## Design handoff
 

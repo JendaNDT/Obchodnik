@@ -292,6 +292,7 @@ private fun ObchodnikAppContent(
                     onRange = viewModel::setRange,
                     onToggleSma7 = viewModel::toggleSma7,
                     onToggleSma30 = viewModel::toggleSma30,
+                    onAddAlert = viewModel::addAlert,
                 )
             }
             composable("settings") {
