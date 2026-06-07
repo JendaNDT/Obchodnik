@@ -209,6 +209,7 @@ class BackupRepositoryImportTest {
         override fun observeSnapshots(currency: String): Flow<List<PortfolioSnapshotEntity>> =
             MutableStateFlow(emptyList())
         override suspend fun upsert(snapshot: PortfolioSnapshotEntity) {}
+        override suspend fun getSnapshotForDay(dayStart: Long, currency: String): PortfolioSnapshotEntity? = null
     }
 
     private class FakeHoldingDao : HoldingDao {

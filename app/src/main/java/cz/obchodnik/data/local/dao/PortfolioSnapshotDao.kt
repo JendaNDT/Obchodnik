@@ -14,4 +14,7 @@ interface PortfolioSnapshotDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(snapshot: PortfolioSnapshotEntity)
+
+    @Query("SELECT * FROM portfolio_snapshots WHERE dayStartMillis = :dayStart AND currency = :currency LIMIT 1")
+    suspend fun getSnapshotForDay(dayStart: Long, currency: String): PortfolioSnapshotEntity?
 }

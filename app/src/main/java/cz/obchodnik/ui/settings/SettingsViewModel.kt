@@ -121,7 +121,9 @@ class SettingsViewModel(
         val repo = backupRepository ?: return
         viewModelScope.launch {
             val result = runCatching {
-                val jsonText = repo.exportToJson(includeApiKeys)
+                val jsonText = withContext(Dispatchers.Default) {
+                    repo.exportToJson(includeApiKeys)
+                }
                 withContext(Dispatchers.IO) {
                     val ctx = context ?: error("Kontext nedostupný")
                     ctx.contentResolver.openOutputStream(uri)?.use { out ->
@@ -149,7 +151,9 @@ class SettingsViewModel(
         viewModelScope.launch {
             val result = runCatching {
                 val text = readText(uri)
-                val preview = repo.previewImport(text)
+                val preview = withContext(Dispatchers.Default) {
+                    repo.previewImport(text)
+                }
                 pendingImportText = text
                 importPreview.value = preview
             }
@@ -174,7 +178,9 @@ class SettingsViewModel(
         }
         viewModelScope.launch {
             val result = runCatching {
-                repo.importFromJson(text)
+                withContext(Dispatchers.Default) {
+                    repo.importFromJson(text)
+                }
             }
             pendingImportText = null
             importPreview.value = null

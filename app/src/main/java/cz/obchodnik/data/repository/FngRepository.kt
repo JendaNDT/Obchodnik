@@ -1,6 +1,7 @@
 package cz.obchodnik.data.repository
 
 import cz.obchodnik.core.Result
+import cz.obchodnik.data.prefs.SettingsRepository
 import cz.obchodnik.data.remote.fng.FngApi
 import cz.obchodnik.data.remote.fng.dto.FngDataDto
 import cz.obchodnik.domain.model.Fng
@@ -8,6 +9,7 @@ import java.util.concurrent.TimeUnit
 
 class FngRepository(
     private val api: FngApi,
+    private val settingsRepository: SettingsRepository,
 ) {
     private var cachedCurrent: Fng? = null
     private var cachedCurrentTimestamp: Long = 0L
@@ -34,6 +36,7 @@ class FngRepository(
             onSuccess = { fng ->
                 cachedCurrent = fng
                 cachedCurrentTimestamp = now
+                runCatching { settingsRepository.setFngData(fng.value, fng.classification) }
                 Result.Success(fng)
             },
             onFailure = { error ->

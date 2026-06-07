@@ -17,4 +17,6 @@ data class AppSettings(
     val usdCzkRate: Double = 23.0,
     val usdCzkRateLastUpdated: Long = 0L,
     val savedMarketViewsJson: String = "",
+    val fngValue: Int = 50,
+    val fngClassification: String = "Neutral",
 )

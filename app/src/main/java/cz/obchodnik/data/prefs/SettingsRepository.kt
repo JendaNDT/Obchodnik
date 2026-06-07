@@ -45,6 +45,8 @@ class SettingsRepository(
                 usdCzkRate = prefs[Keys.usdCzkRate] ?: 23.0,
                 usdCzkRateLastUpdated = prefs[Keys.usdCzkRateLastUpdated] ?: 0L,
                 savedMarketViewsJson = prefs[Keys.savedMarketViewsJson] ?: "",
+                fngValue = prefs[Keys.fngValue] ?: 50,
+                fngClassification = prefs[Keys.fngClassification] ?: "Neutral",
             )
         }
 
@@ -74,6 +76,13 @@ class SettingsRepository(
 
     suspend fun setSavedMarketViewsJson(json: String) =
         update(Keys.savedMarketViewsJson, json)
+
+    suspend fun setFngData(value: Int, classification: String) {
+        dataStore.edit { prefs ->
+            prefs[Keys.fngValue] = value
+            prefs[Keys.fngClassification] = classification
+        }
+    }
 
     suspend fun setRefreshIntervalMinutes(minutes: Int) {
         update(Keys.refreshIntervalMinutes, if (minutes <= 0) 0 else minutes.coerceAtLeast(15))
@@ -108,5 +117,7 @@ class SettingsRepository(
         val usdCzkRate = doublePreferencesKey("usd_czk_rate")
         val usdCzkRateLastUpdated = longPreferencesKey("usd_czk_rate_last_updated")
         val savedMarketViewsJson = stringPreferencesKey("saved_market_views")
+        val fngValue = intPreferencesKey("fng_value")
+        val fngClassification = stringPreferencesKey("fng_classification")
     }
 }

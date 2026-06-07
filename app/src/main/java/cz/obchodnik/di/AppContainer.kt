@@ -123,5 +123,5 @@ class AppContainer(
     val fngApi: FngApi =
         fngRetrofit.create(FngApi::class.java)
 
-    val fngRepository = FngRepository(fngApi)
+    val fngRepository = FngRepository(fngApi, settingsRepository)
 }

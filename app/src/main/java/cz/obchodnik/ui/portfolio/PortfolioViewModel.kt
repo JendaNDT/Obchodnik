@@ -129,33 +129,42 @@ class PortfolioViewModel(
         )
 
     private val selectedRange = MutableStateFlow(ChartRange.M1)
-    private var lastSnapshotSignature: Pair<Long, Long>? = null
+    private var lastHoldingsSignature: String? = null
+    private var lastSnapshotDay: Long = 0L
 
     init {
         viewModelScope.launch {
             settingsRepository.settings
                 .map { it.currency }
                 .flatMapLatest { currency ->
-                    combine(
-                        portfolioRepository.observeHoldings(),
-                        marketRepository.observeQuotes(currency),
-                    ) { holdings, quotes -> Triple(currency, holdings, quotes) }
+                    portfolioRepository.observeHoldings().map { holdings -> currency to holdings }
                 }
-                .collect { (currency, holdings, quotes) ->
+                .collect { (currency, holdings) ->
                     if (holdings.isEmpty()) return@collect
-                    var totalValue = 0.0
-                    var totalInvested = 0.0
-                    holdings.forEach { holding ->
-                        val price = quotes.firstOrNull { it.assetId == holding.assetId }?.price
-                            ?: holding.avgPrice
-                        totalValue += holding.qty * price
-                        totalInvested += holding.qty * holding.avgPrice
-                    }
+                    
+                    val holdingsSignature = holdings.joinToString(";") { "${it.id}:${it.qty}:${it.avgPrice}" }
                     val day = PortfolioHistory.startOfDayMillis(System.currentTimeMillis())
-                    val signature = day to (totalValue * 100.0).toLong()
-                    if (signature == lastSnapshotSignature) return@collect
-                    lastSnapshotSignature = signature
-                    portfolioRepository.recordSnapshot(day, totalValue, totalInvested, currency)
+                    
+                    val isNewDay = day != lastSnapshotDay
+                    val isHoldingsChanged = holdingsSignature != lastHoldingsSignature
+                    
+                    if (isHoldingsChanged || isNewDay) {
+                        lastHoldingsSignature = holdingsSignature
+                        lastSnapshotDay = day
+                        
+                        val existing = portfolioRepository.getSnapshotForDay(day, currency)
+                        if (isHoldingsChanged || existing == null) {
+                            var totalValue = 0.0
+                            var totalInvested = 0.0
+                            for (holding in holdings) {
+                                val price = marketRepository.cachedQuote(holding.assetId, currency)?.price
+                                    ?: holding.avgPrice
+                                totalValue += holding.qty * price
+                                totalInvested += holding.qty * holding.avgPrice
+                            }
+                            portfolioRepository.recordSnapshot(day, totalValue, totalInvested, currency)
+                        }
+                    }
                 }
         }
     }

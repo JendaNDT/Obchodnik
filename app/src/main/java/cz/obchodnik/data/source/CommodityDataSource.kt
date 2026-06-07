@@ -43,15 +43,21 @@ class CommodityDataSource(
             return Result.Error("Zadejte prosím API klíč pro Alpha Vantage v Nastavení.")
         }
 
+        val todayStr = LocalDate.now().toString()
+        val initialCount = if (settings.avCountDate == todayStr) settings.avDailyCount else 0
+        var currentCount = initialCount
+
         return runCatching {
             val usdToCzkRate = currencyRateProvider.getUsdCzkRate()
             val now = System.currentTimeMillis()
             val results = mutableListOf<Quote>()
 
             for (asset in avAssets) {
-                if (!canMakeRequest()) {
+                if (currentCount >= 25) {
                     return Result.Error("Překročen denní limit 25 požadavků pro Alpha Vantage. Další aktualizace proběhne zítra.")
                 }
+
+                currentCount++
 
                 val quote = when (asset.type) {
                     AssetType.COMMODITY -> {
@@ -68,8 +74,18 @@ class CommodityDataSource(
             }
             results
         }.fold(
-            onSuccess = { Result.Success(it) },
-            onFailure = { Result.Error(it.message ?: "Chyba při načítání dat z Alpha Vantage", it) }
+            onSuccess = { quotesList ->
+                if (currentCount != initialCount) {
+                    settingsRepository.setAlphaVantageDailyCount(currentCount, todayStr)
+                }
+                Result.Success(quotesList)
+            },
+            onFailure = { error ->
+                if (currentCount != initialCount) {
+                    runCatching { settingsRepository.setAlphaVantageDailyCount(currentCount, todayStr) }
+                }
+                Result.Error(error.message ?: "Chyba při načítání dat z Alpha Vantage", error)
+            }
         )
     }
 

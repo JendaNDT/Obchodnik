@@ -104,6 +104,13 @@ class RefreshWorker(
                 }
             }
 
+            // Refresh Fear & Greed index so widget has updated cached values
+            runCatching {
+                app.container.fngRepository.getCurrentFng()
+            }.onFailure { e ->
+                Log.e("RefreshWorker", "Failed to refresh Fear & Greed: ${e.message}")
+            }
+
             // Update all active widgets with the newly updated Room DB data
             ObchodnikWidget().updateAll(context)
             Result.success()

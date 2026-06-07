@@ -100,6 +100,8 @@ class ObchodnikWidget : GlanceAppWidget() {
         val currency = settings?.currency ?: "usd"
         val themeName = settings?.theme ?: "terminal"
         val accentName = settings?.accent ?: "blue"
+        val fngValue = settings?.fngValue ?: 50
+        val fngClassification = settings?.fngClassification ?: "Neutral"
 
         // Load assets and quotes (suspend)
         val selectedAssetIds = configAssetsStr.split(",").filter { it.isNotBlank() }
@@ -161,6 +163,7 @@ class ObchodnikWidget : GlanceAppWidget() {
                             quotes = quotes,
                             currency = currency,
                             showFng = showFng && mode.showFng,
+                            fngValue = fngValue,
                             mode = mode,
                             accentColor = accentColor
                         )
@@ -171,6 +174,8 @@ class ObchodnikWidget : GlanceAppWidget() {
                             quotes = quotes,
                             currency = currency,
                             showFng = showFng && mode.showFng,
+                            fngValue = fngValue,
+                            fngClassification = fngClassification,
                             mode = mode,
                             accentColor = accentColor
                         )
@@ -313,6 +318,7 @@ private fun MediumWidgetLayout(
     quotes: Map<String, Quote>,
     currency: String,
     showFng: Boolean,
+    fngValue: Int,
     mode: WidgetMode,
     accentColor: Color
 ) {
@@ -328,7 +334,7 @@ private fun MediumWidgetLayout(
                         style = TextStyle(color = ColorProvider(Color.Gray), fontSize = 9.sp)
                     )
                     Spacer(modifier = GlanceModifier.width(5.dp))
-                    val fngBitmap = drawFngMini(72, 24, density)
+                    val fngBitmap = drawFngMini(fngValue, 24, density)
                     Image(
                         provider = ImageProvider(fngBitmap),
                         contentDescription = null,
@@ -363,6 +369,8 @@ private fun LargeWidgetLayout(
     quotes: Map<String, Quote>,
     currency: String,
     showFng: Boolean,
+    fngValue: Int,
+    fngClassification: String,
     mode: WidgetMode,
     accentColor: Color
 ) {
@@ -374,18 +382,33 @@ private fun LargeWidgetLayout(
         WidgetHeader(accentColor, rightContent = {
             if (showFng) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    val fngColor = when {
+                        fngValue < 25 -> Color(0xFFEF4444)
+                        fngValue < 45 -> Color(0xFFF59E0B)
+                        fngValue < 55 -> Color(0xFFEAB308)
+                        fngValue < 75 -> Color(0xFF84CC16)
+                        else -> Color(0xFF22C55E)
+                    }
+                    val fngLabel = when (fngClassification.lowercase()) {
+                        "extreme fear" -> "Extrémní strach"
+                        "fear" -> "Strach"
+                        "neutral" -> "Neutrální"
+                        "greed" -> "Chamtivost"
+                        "extreme greed" -> "Extrémní chamtivost"
+                        else -> fngClassification
+                    }
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
                             text = "Fear & Greed",
                             style = TextStyle(color = ColorProvider(Color.Gray), fontSize = 8.sp)
                         )
                         Text(
-                            text = "Chamtivost",
-                            style = TextStyle(color = ColorProvider(Color(0xFF84CC16)), fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            text = fngLabel,
+                            style = TextStyle(color = ColorProvider(fngColor), fontSize = 9.sp, fontWeight = FontWeight.Bold)
                         )
                     }
                     Spacer(modifier = GlanceModifier.width(6.dp))
-                    val fngBitmap = drawFngMini(72, 28, density)
+                    val fngBitmap = drawFngMini(fngValue, 28, density)
                     Image(
                         provider = ImageProvider(fngBitmap),
                         contentDescription = null,

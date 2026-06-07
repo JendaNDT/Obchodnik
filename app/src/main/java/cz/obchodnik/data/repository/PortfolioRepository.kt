@@ -44,4 +44,8 @@ class PortfolioRepository(
             ).toEntity(),
         )
     }
+
+    suspend fun getSnapshotForDay(dayStartMillis: Long, currency: String): PortfolioSnapshot? {
+        return snapshotDao.getSnapshotForDay(dayStartMillis, currency.lowercase())?.toDomain()
+    }
 }

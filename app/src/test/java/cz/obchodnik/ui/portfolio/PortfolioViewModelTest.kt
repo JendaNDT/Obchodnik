@@ -331,6 +331,9 @@ class PortfolioViewModelTest {
             current.add(snapshot)
             rows.value = current
         }
+        override suspend fun getSnapshotForDay(dayStart: Long, currency: String): PortfolioSnapshotEntity? {
+            return rows.value.find { it.dayStartMillis == dayStart && it.currency == currency }
+        }
     }
 
     private class FakeAssetStore : AssetLocalStore {
