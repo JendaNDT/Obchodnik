@@ -322,6 +322,7 @@ fun AddAlertSheet(
     currency: String,
     initialAssetId: String? = null,
     initialTarget: Double? = null,
+    referencePrice: Double? = initialTarget,
     onDismiss: () -> Unit,
     onConfirm: (String, Boolean, Double) -> Unit,
 ) {
@@ -464,6 +465,43 @@ fun AddAlertSheet(
             Spacer(Modifier.height(16.dp))
 
             // Target Price Input
+            val safeReferencePrice = referencePrice?.takeIf { it > 0.0 }
+            if (safeReferencePrice != null) {
+                Text(
+                    text = "Rychlé nastavení z aktuální ceny",
+                    color = c.text2,
+                    fontSize = 13.sp,
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    AlertTargetPresets.percentChanges.forEach { percent ->
+                        val positive = percent > 0.0
+                        Text(
+                            text = if (positive) "+${percent.toInt()} %" else "${percent.toInt()} %",
+                            color = if (positive) c.up else c.down,
+                            fontFamily = JetBrainsMono,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 12.sp,
+                            modifier = Modifier
+                                .weight(1f)
+                                .background(c.surface2, RoundedCornerShape(Obchodnik.radii.chip))
+                                .border(1.dp, c.border, RoundedCornerShape(Obchodnik.radii.chip))
+                                .clickable {
+                                    val target = AlertTargetPresets.targetFromPercent(safeReferencePrice, percent)
+                                    targetPriceString = target.toPlainPriceString()
+                                    isAbove = percent > 0.0
+                                }
+                                .padding(vertical = 7.dp),
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+            }
+
             Text(
                 text = "Cílová cena (${currency.uppercase()})",
                 color = c.text2,
@@ -514,4 +552,9 @@ fun AddAlertSheet(
             }
         }
     }
+}
+
+private fun Double.toPlainPriceString(): String {
+    val raw = String.format(Locale.US, "%.8f", this)
+    return raw.trimEnd('0').trimEnd('.').ifEmpty { "0" }
 }

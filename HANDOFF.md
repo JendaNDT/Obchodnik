@@ -67,6 +67,8 @@ Vylepšení po 1.0 (každé samostatný commit na GitHubu):
   aktivovat.
 - Alerty: `AddAlertSheet` je sdílený; Detail aktiva ho otevírá předvyplněný
   aktuálním aktivem a cenou.
+- Alerty: `AddAlertSheet` nabízí rychlé šablony `+5 %`, `+10 %`, `-5 %`,
+  `-10 %`; výpočet kryje `AlertTargetPresetsTest`.
 - Stáří dat: Trh a Detail zobrazují notice při cache fallbacku, limitu Alpha
   Vantage, chybějícím klíči nebo částečně neaktualizovaných datech.
 - Detail: line graf umí `SMA 7` a `SMA 30` overlay indikátory; výpočet kryje
@@ -98,6 +100,7 @@ Vylepšení po 1.0 (každé samostatný commit na GitHubu):
 ## Nápady do budoucna (nezačato)
 
 - Sentry crash reporting (vyžaduje účet + DSN).
+- Opakované alerty.
 - Pokročilejší přehledy portfolia.
 - Uložené pohledy watchlistu.
 - Rychlé šablony alertů.

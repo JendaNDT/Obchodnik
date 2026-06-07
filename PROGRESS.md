@@ -155,6 +155,8 @@ Datum: 2026-06-07
   výpočet je v `MovingAverageCalculator` a kryje ho `MovingAverageCalculatorTest`.
 - Detail: ikona Alert otevírá sdílený `AddAlertSheet` předvyplněný aktuálním
   aktivem a cenou; uložení používá existující `AlertRepository`.
+- Alerty: `AddAlertSheet` má rychlé šablony `+5 %`, `+10 %`, `-5 %`, `-10 %`
+  nad známou aktuální cenou; výpočet cílové ceny kryje `AlertTargetPresetsTest`.
 
 ## Stav
 - Verze: AGP 8.7.0, Kotlin 2.0.21, Compose BOM 2024.10.01, Glance 1.1.0,
@@ -165,7 +167,7 @@ Datum: 2026-06-07
 - `./gradlew :app:testDebugUnitTest --no-daemon` prošlo.
 - Kombinované ověření
   `./gradlew :app:testDebugUnitTest :app:assembleDebug --no-daemon` prošlo
-  2026-06-07 po dokončení alertu z detailu aktiva.
+  2026-06-07 po dokončení rychlých šablon alertů.
 - `./gradlew :app:assembleDebugAndroidTest --no-daemon` prošlo 2026-06-07
   jako kompilace instrumentovaných testů.
 - Room DB je verze 3 s exportem schémat (`app/schemas`) a verzovanými
@@ -183,4 +185,4 @@ Datum: 2026-06-07
 - Sentry crash reporting (vyžaduje účet + DSN).
 - Pokročilejší přehledy portfolia.
 - Uložené pohledy watchlistu.
-- Rychlé šablony alertů.
+- Opakované alerty.
