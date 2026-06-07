@@ -180,6 +180,8 @@ Datum: 2026-06-07
   chipy. Perzistence jako JSON v DataStore (`SettingsRepository`), odolný
   `SavedMarketViewSerializer` (prázdné/rozbité/neznámé enumy). Kryjí
   `SavedMarketViewSerializerTest` a `SettingsRepositorySavedViewsTest`.
+- Widget: podpora režimu Portfolia (celková hodnota portfolia, P/L zisk/ztráta s barvami, sparkline z historie hodnoty v malém layoutu a stránkovaný rozpis holdings s P/L a celkovou hodnotou pozice ve středním a velkém layoutu; výběr zdroje Watchlist vs Portfolio na konfigurační obrazovce s podmíněným skrýváním watchlist checklistu).
+- Widget: sjednocení písma pro čísla na monospace a oprava duplicity znaménka plus (double sign bug) u výpisu procent.
 
 ## Stav
 - Verze: AGP 8.7.0, Kotlin 2.0.21, Compose BOM 2024.10.01, Glance 1.1.0,
@@ -190,20 +192,19 @@ Datum: 2026-06-07
 - `./gradlew :app:testDebugUnitTest --no-daemon` prošlo.
 - Kombinované ověření
   `./gradlew :app:testDebugUnitTest :app:assembleDebug --no-daemon` prošlo
-  2026-06-07 po dokončení vestavěných rychlých pohledů watchlistu.
+  2026-06-07 po dokončení a ověření portfolio režimu widgetu.
+- `./gradlew :app:assembleRelease --no-daemon` prošlo 2026-06-07.
 - `./gradlew :app:assembleDebugAndroidTest --no-daemon` prošlo 2026-06-07
   jako kompilace instrumentovaných testů.
 - Room DB je verze 5 s exportem schémat (`app/schemas`) a verzovanými
   migracemi (`ObchodnikDatabase.MIGRATIONS`); destruktivní migrace jen pro
   downgrade.
 - Poslední push na GitHubu je `6c0a3d0 Alerts: add quick target presets`.
-  Lokální pracovní strom navíc obsahuje otestované, zatím necommitnuté
-  vestavěné rychlé pohledy watchlistu a odpovídající dokumentační aktualizace.
 
 ## Předávka
 - Verze 1.0 i veškerá vylepšení po 1.0 (včetně uložených pohledů watchlistu,
-  opakovaných alertů a grafu vývoje hodnoty portfolia) jsou hotové, otestované
-  a pushnuté na GitHub; pracovní strom je čistý, DB je na verzi 5. Další úpravy
+  opakovaných alertů, grafu vývoje hodnoty portfolia a portfolio režimu widgetu) jsou hotové, otestované
+  a pushnuté na GitHub; pracovní strom obsahuje necommitnuté změny pro widget. Další úpravy
   pokračují v nástroji Antigravity od Google. Viz `HANDOFF.md`.
 
 ## Nápady do budoucna

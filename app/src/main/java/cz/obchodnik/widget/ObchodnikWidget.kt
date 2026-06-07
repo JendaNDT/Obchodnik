@@ -49,6 +49,7 @@ import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.layout.width
 import androidx.glance.state.PreferencesGlanceStateDefinition
+import androidx.glance.text.FontFamily
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
@@ -57,8 +58,10 @@ import cz.obchodnik.MainActivity
 import cz.obchodnik.ObchodnikApp
 import cz.obchodnik.core.format.MarketFormatters
 import cz.obchodnik.data.local.entity.AssetEntity
+import cz.obchodnik.data.local.entity.HoldingEntity
 import cz.obchodnik.data.local.entity.QuoteEntity
 import cz.obchodnik.data.local.toDomain
+import cz.obchodnik.data.local.toEntity
 import cz.obchodnik.domain.model.Quote
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
@@ -71,6 +74,17 @@ object ObchodnikWidgetKeys {
     val showFng = booleanPreferencesKey("show_fng")
     val mode = stringPreferencesKey("mode")
     val page = intPreferencesKey("page")
+    val source = stringPreferencesKey("source")
+}
+
+enum class WidgetSource(val key: String, val label: String) {
+    WATCHLIST("watchlist", "Watchlist"),
+    PORTFOLIO("portfolio", "Portfolio");
+
+    companion object {
+        fun fromKey(key: String?): WidgetSource =
+            entries.firstOrNull { it.key == key } ?: WATCHLIST
+    }
 }
 
 class ObchodnikWidget : GlanceAppWidget() {
@@ -98,6 +112,7 @@ class ObchodnikWidget : GlanceAppWidget() {
         val showFng = prefs[ObchodnikWidgetKeys.showFng] ?: true
         val mode = WidgetMode.fromKey(prefs[ObchodnikWidgetKeys.mode])
         val currentPage = prefs[ObchodnikWidgetKeys.page] ?: 0
+        val widgetSource = WidgetSource.fromKey(prefs[ObchodnikWidgetKeys.source])
 
         // Read settings from DataStore (suspend)
         val settings = runCatching { settingsStore.settings.first() }.getOrNull()
@@ -107,18 +122,57 @@ class ObchodnikWidget : GlanceAppWidget() {
         val fngValue = settings?.fngValue ?: 50
         val fngClassification = settings?.fngClassification ?: "Neutral"
 
-        // Load assets and quotes (suspend)
-        val selectedAssetIds = configAssetsStr.split(",").filter { it.isNotBlank() }
-        val dbAssets = assetDao.watchlistAssets().associateBy { it.id }
-        
+        // Load holdings if portfolio mode
+        val holdings = if (widgetSource == WidgetSource.PORTFOLIO) {
+            app.container.database.holdingDao().observeHoldings().first()
+        } else {
+            emptyList()
+        }
+
         // Map selected assets or fallback to default
-        val assets = selectedAssetIds.mapNotNull { dbAssets[it] }
-            .takeIf { it.isNotEmpty() }
-            ?: dbAssets.values.take(5).toList()
+        val dbAssets = assetDao.watchlistAssets().associateBy { it.id }
+        val assets = if (widgetSource == WidgetSource.PORTFOLIO) {
+            val allAssets = (assetDao.watchlistAssets() + cz.obchodnik.domain.model.StaticAssetCatalog.assets.map { it.toEntity() })
+                .distinctBy { it.id }
+                .associateBy { it.id }
+            holdings.mapNotNull { allAssets[it.assetId] }
+        } else {
+            val selectedAssetIds = configAssetsStr.split(",").filter { it.isNotBlank() }
+            selectedAssetIds.mapNotNull { dbAssets[it] }
+                .takeIf { it.isNotEmpty() }
+                ?: dbAssets.values.take(5).toList()
+        }
 
         val quotes = quoteDao.quotesForAssets(assets.map { it.id }, currency)
             .map { it.toDomain(json) }
             .associateBy { it.assetId }
+
+        // Calculate portfolio metrics
+        var totalValue = 0.0
+        var totalInvested = 0.0
+        holdings.forEach { holding ->
+            val price = quotes[holding.assetId]?.price ?: holding.avgPrice
+            totalValue += holding.qty * price
+            totalInvested += holding.qty * holding.avgPrice
+        }
+        val totalPL = totalValue - totalInvested
+        val totalPLPct = if (totalInvested > 0.0) (totalPL / totalInvested) * 100.0 else null
+
+        // Load snapshots and history points for small widget portfolio chart
+        val snapshots = if (widgetSource == WidgetSource.PORTFOLIO) {
+            app.container.database.portfolioSnapshotDao().observeSnapshots(currency).first()
+        } else {
+            emptyList()
+        }
+        val historyPoints = if (widgetSource == WidgetSource.PORTFOLIO && snapshots.isNotEmpty()) {
+            cz.obchodnik.domain.PortfolioHistory.pointsForRange(
+                snapshots = snapshots.map { it.toDomain() },
+                range = cz.obchodnik.domain.model.ChartRange.M1,
+                now = System.currentTimeMillis()
+            )
+        } else {
+            emptyList()
+        }
 
         provideContent {
             val size = LocalSize.current
@@ -169,7 +223,12 @@ class ObchodnikWidget : GlanceAppWidget() {
                             asset = asset,
                             quote = quote,
                             currency = currency,
-                            accentColor = accentColor
+                            accentColor = accentColor,
+                            widgetSource = widgetSource,
+                            totalValue = totalValue,
+                            totalPL = totalPL,
+                            totalPLPct = totalPLPct,
+                            historyPoints = historyPoints
                         )
                     }
                     WidgetLayoutType.MEDIUM -> {
@@ -183,7 +242,12 @@ class ObchodnikWidget : GlanceAppWidget() {
                             mode = mode,
                             accentColor = accentColor,
                             currentPage = pageIndex,
-                            pageSize = pageSize
+                            pageSize = pageSize,
+                            widgetSource = widgetSource,
+                            totalValue = totalValue,
+                            totalPL = totalPL,
+                            totalPLPct = totalPLPct,
+                            holdings = holdings
                         )
                     }
                     WidgetLayoutType.LARGE -> {
@@ -198,7 +262,12 @@ class ObchodnikWidget : GlanceAppWidget() {
                             mode = mode,
                             accentColor = accentColor,
                             currentPage = pageIndex,
-                            pageSize = pageSize
+                            pageSize = pageSize,
+                            widgetSource = widgetSource,
+                            totalValue = totalValue,
+                            totalPL = totalPL,
+                            totalPLPct = totalPLPct,
+                            holdings = holdings
                         )
                     }
                 }
@@ -241,6 +310,8 @@ private fun WidgetHeader(
     totalAssets: Int = 0,
     pageSize: Int = 1,
     currentPage: Int = 0,
+    title: String = "Obchodník",
+    titleColor: Color = Color.White,
     rightContent: @Composable () -> Unit = {}
 ) {
     Row(
@@ -262,9 +333,9 @@ private fun WidgetHeader(
             }
             Spacer(modifier = GlanceModifier.width(6.dp))
             Text(
-                text = "Obchodník",
+                text = title,
                 style = TextStyle(
-                    color = ColorProvider(Color.White),
+                    color = ColorProvider(titleColor),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -331,62 +402,133 @@ private fun SmallWidgetLayout(
     asset: AssetEntity?,
     quote: Quote?,
     currency: String,
-    accentColor: Color
+    accentColor: Color,
+    widgetSource: WidgetSource,
+    totalValue: Double,
+    totalPL: Double,
+    totalPLPct: Double?,
+    historyPoints: List<cz.obchodnik.domain.model.PricePoint>
 ) {
-    if (asset == null) {
-        Column(
-            modifier = GlanceModifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(text = "Žádná data", style = TextStyle(color = ColorProvider(Color.White), fontSize = 12.sp))
-        }
-        return
-    }
-
     val context = LocalContext.current
     val density = context.resources.displayMetrics.density
-    val change = quote?.change24hPct ?: 0.0
-    val up = change >= 0.0
-    val changeColor = if (up) Color(0xFF16C784) else Color(0xFFEA3943)
 
-    Column(modifier = GlanceModifier.fillMaxSize().clickable(openAssetAction(context, asset.id))) {
-        WidgetHeader(accentColor)
-        Spacer(modifier = GlanceModifier.height(4.dp))
-        Row(
-            modifier = GlanceModifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+    if (widgetSource == WidgetSource.PORTFOLIO) {
+        val up = totalPL >= 0.0
+        val changeColor = if (up) Color(0xFF16C784) else Color(0xFFEA3943)
+
+        Column(modifier = GlanceModifier.fillMaxSize()) {
+            WidgetHeader(accentColor)
+            Spacer(modifier = GlanceModifier.height(4.dp))
+            Row(
+                modifier = GlanceModifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Portfolio",
+                    style = TextStyle(color = ColorProvider(Color.White), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                )
+                Spacer(modifier = GlanceModifier.width(6.dp))
+                Text(
+                    text = "Celkem",
+                    style = TextStyle(color = ColorProvider(Color.LightGray), fontSize = 10.sp)
+                )
+            }
+            Spacer(modifier = GlanceModifier.height(4.dp))
             Text(
-                text = asset.symbol,
-                style = TextStyle(color = ColorProvider(Color.White), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                text = MarketFormatters.price(totalValue, currency),
+                style = TextStyle(
+                    color = ColorProvider(Color.White),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace
+                )
             )
-            Spacer(modifier = GlanceModifier.width(6.dp))
             Text(
-                text = asset.name,
-                style = TextStyle(color = ColorProvider(Color.LightGray), fontSize = 10.sp)
+                text = "${MarketFormatters.percent(totalPLPct ?: 0.0)} · Celkem",
+                style = TextStyle(
+                    color = ColorProvider(changeColor),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                    fontFamily = FontFamily.Monospace
+                )
             )
+            Spacer(modifier = GlanceModifier.height(4.dp))
+            val sparkline = historyPoints.map { it.price }
+            if (sparkline.size >= 2) {
+                val bitmap = drawSparkline(sparkline, up, 120, 28, density)
+                Image(
+                    provider = ImageProvider(bitmap),
+                    contentDescription = null,
+                    modifier = GlanceModifier.fillMaxWidth().height(28.dp)
+                )
+            } else {
+                Spacer(modifier = GlanceModifier.defaultWeight())
+            }
         }
-        Spacer(modifier = GlanceModifier.height(4.dp))
-        Text(
-            text = MarketFormatters.price(quote?.price, currency),
-            style = TextStyle(color = ColorProvider(Color.White), fontSize = 20.sp, fontWeight = FontWeight.Bold)
-        )
-        Text(
-            text = "${if (change >= 0) "+" else ""}${MarketFormatters.percent(change)} · 24h",
-            style = TextStyle(color = ColorProvider(changeColor), fontSize = 11.sp, fontWeight = FontWeight.Medium)
-        )
-        Spacer(modifier = GlanceModifier.height(4.dp))
-        val sparkline = quote?.sparkline7d.orEmpty()
-        if (sparkline.size >= 2) {
-            val bitmap = drawSparkline(sparkline, up, 120, 28, density)
-            Image(
-                provider = ImageProvider(bitmap),
-                contentDescription = null,
-                modifier = GlanceModifier.fillMaxWidth().height(28.dp)
+    } else {
+        if (asset == null) {
+            Column(
+                modifier = GlanceModifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "Žádná data", style = TextStyle(color = ColorProvider(Color.White), fontSize = 12.sp))
+            }
+            return
+        }
+
+        val change = quote?.change24hPct ?: 0.0
+        val up = change >= 0.0
+        val changeColor = if (up) Color(0xFF16C784) else Color(0xFFEA3943)
+
+        Column(modifier = GlanceModifier.fillMaxSize().clickable(openAssetAction(context, asset.id))) {
+            WidgetHeader(accentColor)
+            Spacer(modifier = GlanceModifier.height(4.dp))
+            Row(
+                modifier = GlanceModifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = asset.symbol,
+                    style = TextStyle(color = ColorProvider(Color.White), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                )
+                Spacer(modifier = GlanceModifier.width(6.dp))
+                Text(
+                    text = asset.name,
+                    style = TextStyle(color = ColorProvider(Color.LightGray), fontSize = 10.sp)
+                )
+            }
+            Spacer(modifier = GlanceModifier.height(4.dp))
+            Text(
+                text = MarketFormatters.price(quote?.price, currency),
+                style = TextStyle(
+                    color = ColorProvider(Color.White),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace
+                )
             )
-        } else {
-            Spacer(modifier = GlanceModifier.defaultWeight())
+            Text(
+                text = "${MarketFormatters.percent(change)} · 24h",
+                style = TextStyle(
+                    color = ColorProvider(changeColor),
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                    fontFamily = FontFamily.Monospace
+                )
+            )
+            Spacer(modifier = GlanceModifier.height(4.dp))
+            val sparkline = quote?.sparkline7d.orEmpty()
+            if (sparkline.size >= 2) {
+                val bitmap = drawSparkline(sparkline, up, 120, 28, density)
+                Image(
+                    provider = ImageProvider(bitmap),
+                    contentDescription = null,
+                    modifier = GlanceModifier.fillMaxWidth().height(28.dp)
+                )
+            } else {
+                Spacer(modifier = GlanceModifier.defaultWeight())
+            }
         }
     }
 }
@@ -402,10 +544,25 @@ private fun MediumWidgetLayout(
     mode: WidgetMode,
     accentColor: Color,
     currentPage: Int,
-    pageSize: Int
+    pageSize: Int,
+    widgetSource: WidgetSource,
+    totalValue: Double,
+    totalPL: Double,
+    totalPLPct: Double?,
+    holdings: List<HoldingEntity>
 ) {
     val context = LocalContext.current
     val density = context.resources.displayMetrics.density
+
+    val headerTitle = if (widgetSource == WidgetSource.PORTFOLIO) {
+        if (totalPLPct != null) {
+            "Portf.: ${MarketFormatters.price(totalValue, currency)} (${MarketFormatters.percent(totalPLPct)})"
+        } else {
+            "Portf.: ${MarketFormatters.price(totalValue, currency)}"
+        }
+    } else {
+        "Obchodník"
+    }
     
     Column(modifier = GlanceModifier.fillMaxSize()) {
         WidgetHeader(
@@ -413,6 +570,7 @@ private fun MediumWidgetLayout(
             totalAssets = assets.size,
             pageSize = pageSize,
             currentPage = currentPage,
+            title = headerTitle,
             rightContent = {
                 if (showFng) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -438,6 +596,11 @@ private fun MediumWidgetLayout(
         ) {
             pagedAssets.forEachIndexed { index, asset ->
                 if (index > 0) Spacer(modifier = GlanceModifier.height(6.dp))
+                val holding = if (widgetSource == WidgetSource.PORTFOLIO) {
+                    holdings.firstOrNull { it.assetId == asset.id }
+                } else {
+                    null
+                }
                 WidgetAssetRow(
                     asset = asset,
                     quote = quotes[asset.id],
@@ -445,6 +608,7 @@ private fun MediumWidgetLayout(
                     density = density,
                     showSpark = mode.showSpark,
                     chartWidthDp = if (mode == WidgetMode.CHARTS) 72 else 48,
+                    holding = holding
                 )
             }
         }
@@ -463,11 +627,26 @@ private fun LargeWidgetLayout(
     mode: WidgetMode,
     accentColor: Color,
     currentPage: Int,
-    pageSize: Int
+    pageSize: Int,
+    widgetSource: WidgetSource,
+    totalValue: Double,
+    totalPL: Double,
+    totalPLPct: Double?,
+    holdings: List<HoldingEntity>
 ) {
     val context = LocalContext.current
     val density = context.resources.displayMetrics.density
     val timeStr = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+
+    val headerTitle = if (widgetSource == WidgetSource.PORTFOLIO) {
+        if (totalPLPct != null) {
+            "Portf.: ${MarketFormatters.price(totalValue, currency)} (${MarketFormatters.percent(totalPLPct)})"
+        } else {
+            "Portf.: ${MarketFormatters.price(totalValue, currency)}"
+        }
+    } else {
+        "Obchodník"
+    }
 
     Column(modifier = GlanceModifier.fillMaxSize()) {
         WidgetHeader(
@@ -475,6 +654,7 @@ private fun LargeWidgetLayout(
             totalAssets = assets.size,
             pageSize = pageSize,
             currentPage = currentPage,
+            title = headerTitle,
             rightContent = {
                 if (showFng) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -520,6 +700,11 @@ private fun LargeWidgetLayout(
                 if (index > 0) {
                     Box(modifier = GlanceModifier.fillMaxWidth().height(1.dp).background(Color(0x12FFFFFF))) {}
                 }
+                val holding = if (widgetSource == WidgetSource.PORTFOLIO) {
+                    holdings.firstOrNull { it.assetId == asset.id }
+                } else {
+                    null
+                }
                 WidgetAssetRow(
                     asset = asset,
                     quote = quotes[asset.id],
@@ -527,6 +712,7 @@ private fun LargeWidgetLayout(
                     density = density,
                     showSpark = mode.showSpark,
                     chartWidthDp = if (mode == WidgetMode.CHARTS) 76 else 48,
+                    holding = holding
                 )
             }
         }
@@ -566,8 +752,15 @@ private fun WidgetAssetRow(
     density: Float,
     showSpark: Boolean,
     chartWidthDp: Int = 48,
+    holding: HoldingEntity? = null,
 ) {
-    val change = quote?.change24hPct ?: 0.0
+    val price = quote?.price ?: holding?.avgPrice ?: 0.0
+    val displayValue = if (holding != null) holding.qty * price else quote?.price
+    val change = if (holding != null) {
+        if (holding.avgPrice > 0.0) ((price - holding.avgPrice) / holding.avgPrice) * 100.0 else 0.0
+    } else {
+        quote?.change24hPct ?: 0.0
+    }
     val up = change >= 0.0
     val changeColor = if (up) Color(0xFF16C784) else Color(0xFFEA3943)
     val color = runCatching { Color(android.graphics.Color.parseColor(asset.colorHex ?: "#3B82F6")) }.getOrDefault(Color(0xFF3B82F6))
@@ -616,12 +809,22 @@ private fun WidgetAssetRow(
         }
         Column(horizontalAlignment = Alignment.End) {
             Text(
-                text = MarketFormatters.price(quote?.price, currency),
-                style = TextStyle(color = ColorProvider(Color.White), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                text = MarketFormatters.price(displayValue, currency),
+                style = TextStyle(
+                    color = ColorProvider(Color.White),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace
+                )
             )
             Text(
-                text = "${if (change >= 0) "+" else ""}${MarketFormatters.percent(change)}",
-                style = TextStyle(color = ColorProvider(changeColor), fontSize = 10.sp, fontWeight = FontWeight.Medium)
+                text = MarketFormatters.percent(change),
+                style = TextStyle(
+                    color = ColorProvider(changeColor),
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Medium,
+                    fontFamily = FontFamily.Monospace
+                )
             )
         }
     }

@@ -126,6 +126,7 @@ private fun WidgetConfigScreen(
     val selectedAssetIds = remember { mutableStateListOf<String>() }
     var showFng by remember { mutableStateOf(true) }
     var mode by remember { mutableStateOf(WidgetMode.BALANCED) }
+    var source by remember { mutableStateOf(WidgetSource.WATCHLIST) }
     var isLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
@@ -144,6 +145,7 @@ private fun WidgetConfigScreen(
         }
         showFng = prefs[ObchodnikWidgetKeys.showFng] ?: true
         mode = WidgetMode.fromKey(prefs[ObchodnikWidgetKeys.mode])
+        source = WidgetSource.fromKey(prefs[ObchodnikWidgetKeys.source])
         isLoading = false
     }
 
@@ -164,12 +166,6 @@ private fun WidgetConfigScreen(
             fontSize = 22.sp
         )
 
-        Text(
-            text = "Vyberte aktiva ze svého watchlistu, která se mají na widgetu zobrazovat. Zvolit lze nejvýše 5 aktiv.",
-            color = c.text3,
-            fontSize = 13.sp
-        )
-
         if (isLoading) {
             Box(
                 modifier = Modifier.fillMaxWidth().height(150.dp),
@@ -177,84 +173,129 @@ private fun WidgetConfigScreen(
             ) {
                 Text(text = "Načítání...", color = c.text2, fontFamily = JetBrainsMono)
             }
-        } else if (watchlistAssets.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxWidth().height(150.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Váš watchlist je prázdný. Přidejte nejprve aktiva v aplikaci.",
-                    color = c.text3,
-                    fontSize = 14.sp
-                )
-            }
         } else {
-            ObchodnikCard(padding = androidx.compose.foundation.layout.PaddingValues(4.dp)) {
-                Column {
-                    watchlistAssets.forEachIndexed { index, asset ->
-                        val isSelected = selectedAssetIds.contains(asset.id)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    if (isSelected) {
-                                        selectedAssetIds.remove(asset.id)
-                                    } else {
-                                        if (selectedAssetIds.size >= 5) {
-                                            Toast.makeText(
-                                                context,
-                                                "Můžete vybrat maximálně 5 aktiv.",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        } else {
-                                            selectedAssetIds.add(asset.id)
-                                        }
-                                    }
-                                }
-                                .padding(horizontal = 12.dp, vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            AssetIcon(symbol = asset.symbol, colorHex = asset.colorHex, size = 32.dp)
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = asset.symbol,
-                                    color = c.text,
-                                    fontFamily = JetBrainsMono,
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 14.sp
-                                )
-                                Text(text = asset.name, color = c.text3, fontSize = 11.sp)
-                            }
-                            Checkbox(
-                                checked = isSelected,
-                                onCheckedChange = { checked ->
-                                    if (checked) {
-                                        if (selectedAssetIds.size >= 5) {
-                                            Toast.makeText(
-                                                context,
-                                                "Můžete vybrat maximálně 5 aktiv.",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        } else {
-                                            selectedAssetIds.add(asset.id)
-                                        }
-                                    } else {
-                                        selectedAssetIds.remove(asset.id)
-                                    }
-                                },
-                                colors = CheckboxDefaults.colors(
-                                    checkedColor = c.accent,
-                                    uncheckedColor = c.borderStrong,
-                                    checkmarkColor = c.onAccent
-                                )
+            ObchodnikCard(padding = androidx.compose.foundation.layout.PaddingValues(12.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        text = "Zdroj dat widgetu",
+                        color = c.text,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        WidgetSource.entries.forEach { option ->
+                            val active = option == source
+                            Text(
+                                text = option.label,
+                                color = if (active) c.onAccent else c.text2,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 12.sp,
+                                modifier = Modifier
+                                    .background(
+                                        if (active) c.accent else c.surface2,
+                                        RoundedCornerShape(Obchodnik.radii.chip),
+                                    )
+                                    .clickable { source = option }
+                                    .padding(horizontal = 11.dp, vertical = 7.dp),
                             )
-                        }
-                        if (index < watchlistAssets.lastIndex) {
-                            HorizontalDivider(color = c.border, thickness = 1.dp)
                         }
                     }
                 }
+            }
+
+            if (source == WidgetSource.WATCHLIST) {
+                Text(
+                    text = "Vyberte aktiva ze svého watchlistu, která se mají na widgetu zobrazovat. Zvolit lze nejvýše 5 aktiv.",
+                    color = c.text3,
+                    fontSize = 13.sp
+                )
+
+                if (watchlistAssets.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().height(150.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Váš watchlist je prázdný. Přidejte nejprve aktiva v aplikaci.",
+                            color = c.text3,
+                            fontSize = 14.sp
+                        )
+                    }
+                } else {
+                    ObchodnikCard(padding = androidx.compose.foundation.layout.PaddingValues(4.dp)) {
+                        Column {
+                            watchlistAssets.forEachIndexed { index, asset ->
+                                val isSelected = selectedAssetIds.contains(asset.id)
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            if (isSelected) {
+                                                selectedAssetIds.remove(asset.id)
+                                            } else {
+                                                if (selectedAssetIds.size >= 5) {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Můžete vybrat maximálně 5 aktiv.",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                } else {
+                                                    selectedAssetIds.add(asset.id)
+                                                }
+                                            }
+                                        }
+                                        .padding(horizontal = 12.dp, vertical = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    AssetIcon(symbol = asset.symbol, colorHex = asset.colorHex, size = 32.dp)
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = asset.symbol,
+                                            color = c.text,
+                                            fontFamily = JetBrainsMono,
+                                            fontWeight = FontWeight.SemiBold,
+                                            fontSize = 14.sp
+                                        )
+                                        Text(text = asset.name, color = c.text3, fontSize = 11.sp)
+                                    }
+                                    Checkbox(
+                                        checked = isSelected,
+                                        onCheckedChange = { checked ->
+                                            if (checked) {
+                                                if (selectedAssetIds.size >= 5) {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Můžete vybrat maximálně 5 aktiv.",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                } else {
+                                                    selectedAssetIds.add(asset.id)
+                                                }
+                                            } else {
+                                                selectedAssetIds.remove(asset.id)
+                                            }
+                                        },
+                                        colors = CheckboxDefaults.colors(
+                                            checkedColor = c.accent,
+                                            uncheckedColor = c.borderStrong,
+                                            checkmarkColor = c.onAccent
+                                        )
+                                    )
+                                }
+                                if (index < watchlistAssets.lastIndex) {
+                                    HorizontalDivider(color = c.border, thickness = 1.dp)
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                Text(
+                    text = "Widget bude automaticky zobrazovat aktuální stav a držená aktiva z vašeho portfolia.",
+                    color = c.text3,
+                    fontSize = 13.sp
+                )
             }
 
             ObchodnikCard(padding = androidx.compose.foundation.layout.PaddingValues(12.dp)) {
@@ -330,7 +371,7 @@ private fun WidgetConfigScreen(
 
             Button(
                 onClick = {
-                    if (selectedAssetIds.isEmpty()) {
+                    if (source == WidgetSource.WATCHLIST && selectedAssetIds.isEmpty()) {
                         Toast.makeText(
                             context,
                             "Vyberte alespoň jedno aktivum.",
@@ -344,6 +385,7 @@ private fun WidgetConfigScreen(
                             prefs[ObchodnikWidgetKeys.assets] = selectedAssetIds.joinToString(",")
                             prefs[ObchodnikWidgetKeys.showFng] = showFng
                             prefs[ObchodnikWidgetKeys.mode] = mode.key
+                            prefs[ObchodnikWidgetKeys.source] = source.key
                         }
                         ObchodnikWidget().update(context, glanceId)
                         onSaveCompleted()

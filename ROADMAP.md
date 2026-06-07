@@ -46,6 +46,7 @@ Legenda: ✅ hotovo · ⏳ čeká · ✖ přeskočeno
 37. ✅ Detail: interaktivní cenový graf s křížovým ukazatelem a tooltipem s přesnou historickou cenou a časem
 38. ✅ Widget: stránkování watchlistu ve středním a velkém widgetu tlačítky ◀/▶
 39. ✅ Detail: integrace AI tržních analýz a predikcí pomocí Google Gemini API
+40. ✅ Widget: podpora režimu Portfolia (celková hodnota, P/L, sparkline historie a rozpis holdings s P/L a celkovou hodnotou pozice; výběr zdroje na konfigurační obrazovce)
 
 Nápady do budoucna: žádné otevřené — backlog je hotový.
 

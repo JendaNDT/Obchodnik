@@ -104,6 +104,8 @@ Vylepšení po 1.0 (každé samostatný commit na GitHubu):
 - Detail: interaktivní cenový graf s křížovým ukazatelem a tooltipem s přesnou historickou cenou a časem (s plynulým vertikálním scrollem bez konzumace gest).
 - Widget: stránkování watchlistu ve středním a velkém Glance widgetu tlačítky `◀`/`▶` a indikací `X/Y` uložené v Glance Preferences (`WidgetPageAction`).
 - Detail: integrace AI tržních analýz a predikcí pomocí Google Gemini API (`gemini-1.5-flash`), s bezpečným šifrovaným ukládáním klíče v Nastavení.
+- Widget: podpora režimu Portfolia (celková hodnota, P/L, sparkline historie a rozpis holdings s P/L a celkovou hodnotou pozice; výběr zdroje na konfigurační obrazovce).
+- Widget: oprava duplicitního znaménka a sjednocení číselných hodnot na monospace písmo.
 
 ## Klíčové konvence a gotchas
 
