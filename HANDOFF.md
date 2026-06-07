@@ -100,6 +100,10 @@ Vylepšení po 1.0 (každé samostatný commit na GitHubu):
 - Widget: konfigurace má režimy `Vyvážený`, `Ceny` a `Grafy`.
 - Detail/Trh: klikací dialog vysvětluje ETF zástupce, denní komoditní data a
   měnový dopočet.
+- Alerty: deep linking z push notifikací cenových alertů na detail příslušného aktiva.
+- Detail: interaktivní cenový graf s křížovým ukazatelem a tooltipem s přesnou historickou cenou a časem (s plynulým vertikálním scrollem bez konzumace gest).
+- Widget: stránkování watchlistu ve středním a velkém Glance widgetu tlačítky `◀`/`▶` a indikací `X/Y` uložené v Glance Preferences (`WidgetPageAction`).
+- Detail: integrace AI tržních analýz a predikcí pomocí Google Gemini API (`gemini-1.5-flash`), s bezpečným šifrovaným ukládáním klíče v Nastavení.
 
 ## Klíčové konvence a gotchas
 

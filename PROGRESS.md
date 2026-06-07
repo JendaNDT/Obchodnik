@@ -143,8 +143,12 @@ Datum: 2026-06-07
 - Trh: watchlist lze ručně řadit šipkami v kategorii „Vše".
 - Widget: konfigurace podporuje režimy `Vyvážený`, `Ceny` a `Grafy`; widget
   podle režimu mění mini grafy, F&G a počet řádků.
-- Detail + Trh: klikací dialog vysvětluje ETF zástupce SPY/QQQ/DIA, denní
-  komoditní data a CZK dopočet přes USD/CZK.
+- Detail/Trh: klikací dialog vysvětluje ETF zástupce, denní komoditní data a
+  měnový dopočet.
+- Alerty: deep linking z push notifikací cenových alertů na detail příslušného aktiva.
+- Detail: interaktivní cenový graf s křížovým ukazatelem a tooltipem s přesnou historickou cenou a časem (s plynulým vertikálním scrollem bez konzumace gest).
+- Widget: stránkování watchlistu ve středním a velkém Glance widgetu tlačítky `◀`/`▶` a indikací `X/Y` uložené v Glance Preferences (`WidgetPageAction`).
+- Detail: integrace AI tržních analýz a predikcí pomocí Google Gemini API (`gemini-1.5-flash`), s bezpečným šifrovaným ukládáním klíče v Nastavení.
 - Portfolio CSV: obrazovka Portfolio má export přes Storage Access Framework;
   `PortfolioCsvExporter` vytváří CSV se symbolem, názvem, množstvím, nákupní a
   aktuální cenou, hodnotou, investicí, P/L a měnou; formát kryje unit test.
