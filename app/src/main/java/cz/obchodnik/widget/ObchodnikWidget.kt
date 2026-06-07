@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.glance.Button
 import androidx.glance.ButtonDefaults
 import androidx.glance.GlanceId
@@ -27,6 +28,7 @@ import androidx.glance.LocalSize
 import android.net.Uri
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
+import androidx.glance.action.actionParametersOf
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.SizeMode
@@ -68,6 +70,7 @@ object ObchodnikWidgetKeys {
     val assets = stringPreferencesKey("assets")
     val showFng = booleanPreferencesKey("show_fng")
     val mode = stringPreferencesKey("mode")
+    val page = intPreferencesKey("page")
 }
 
 class ObchodnikWidget : GlanceAppWidget() {
@@ -94,6 +97,7 @@ class ObchodnikWidget : GlanceAppWidget() {
         val configAssetsStr = prefs[ObchodnikWidgetKeys.assets] ?: "cg:bitcoin"
         val showFng = prefs[ObchodnikWidgetKeys.showFng] ?: true
         val mode = WidgetMode.fromKey(prefs[ObchodnikWidgetKeys.mode])
+        val currentPage = prefs[ObchodnikWidgetKeys.page] ?: 0
 
         // Read settings from DataStore (suspend)
         val settings = runCatching { settingsStore.settings.first() }.getOrNull()
@@ -138,6 +142,17 @@ class ObchodnikWidget : GlanceAppWidget() {
                 else -> WidgetLayoutType.SMALL
             }
 
+            val pageSize = when (layoutType) {
+                WidgetLayoutType.SMALL -> 1
+                WidgetLayoutType.MEDIUM -> if (mode == WidgetMode.CHARTS) 2 else 3
+                WidgetLayoutType.LARGE -> if (mode == WidgetMode.CHARTS) 3 else 5
+            }
+
+            val totalAssets = assets.size
+            val totalPages = (totalAssets + pageSize - 1) / pageSize
+            val pageIndex = if (totalPages > 0) currentPage.coerceIn(0, totalPages - 1) else 0
+            val pagedAssets = assets.drop(pageIndex * pageSize).take(pageSize)
+
             Box(
                 modifier = GlanceModifier
                     .fillMaxSize()
@@ -148,7 +163,7 @@ class ObchodnikWidget : GlanceAppWidget() {
             ) {
                 when (layoutType) {
                     WidgetLayoutType.SMALL -> {
-                        val asset = assets.firstOrNull()
+                        val asset = pagedAssets.firstOrNull()
                         val quote = asset?.let { quotes[it.id] }
                         SmallWidgetLayout(
                             asset = asset,
@@ -159,25 +174,31 @@ class ObchodnikWidget : GlanceAppWidget() {
                     }
                     WidgetLayoutType.MEDIUM -> {
                         MediumWidgetLayout(
-                            assets = assets.take(3),
+                            assets = assets,
+                            pagedAssets = pagedAssets,
                             quotes = quotes,
                             currency = currency,
                             showFng = showFng && mode.showFng,
                             fngValue = fngValue,
                             mode = mode,
-                            accentColor = accentColor
+                            accentColor = accentColor,
+                            currentPage = pageIndex,
+                            pageSize = pageSize
                         )
                     }
                     WidgetLayoutType.LARGE -> {
                         LargeWidgetLayout(
-                            assets = assets.take(if (mode == WidgetMode.CHARTS) 3 else 5),
+                            assets = assets,
+                            pagedAssets = pagedAssets,
                             quotes = quotes,
                             currency = currency,
                             showFng = showFng && mode.showFng,
                             fngValue = fngValue,
                             fngClassification = fngClassification,
                             mode = mode,
-                            accentColor = accentColor
+                            accentColor = accentColor,
+                            currentPage = pageIndex,
+                            pageSize = pageSize
                         )
                     }
                 }
@@ -215,7 +236,13 @@ private fun openAssetAction(context: Context, assetId: String) =
     )
 
 @Composable
-private fun WidgetHeader(accentColor: Color, rightContent: @Composable () -> Unit = {}) {
+private fun WidgetHeader(
+    accentColor: Color,
+    totalAssets: Int = 0,
+    pageSize: Int = 1,
+    currentPage: Int = 0,
+    rightContent: @Composable () -> Unit = {}
+) {
     Row(
         modifier = GlanceModifier.fillMaxWidth().height(20.dp),
         horizontalAlignment = Alignment.Start,
@@ -242,6 +269,58 @@ private fun WidgetHeader(accentColor: Color, rightContent: @Composable () -> Uni
                     fontWeight = FontWeight.Bold
                 )
             )
+
+            if (totalAssets > pageSize) {
+                Spacer(modifier = GlanceModifier.width(10.dp))
+                val totalPages = (totalAssets + pageSize - 1) / pageSize
+                val displayPage = currentPage + 1
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "◀",
+                        style = TextStyle(
+                            color = ColorProvider(Color.LightGray),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        modifier = GlanceModifier.clickable(
+                            actionRunCallback<WidgetPageAction>(
+                                actionParametersOf(
+                                    WidgetPageAction.DirectionKey to "prev",
+                                    WidgetPageAction.TotalAssetsKey to totalAssets,
+                                    WidgetPageAction.PageSizeKey to pageSize
+                                )
+                            )
+                        )
+                    )
+                    Spacer(modifier = GlanceModifier.width(6.dp))
+                    Text(
+                        text = "$displayPage/$totalPages",
+                        style = TextStyle(
+                            color = ColorProvider(Color.Gray),
+                            fontSize = 9.sp
+                        )
+                    )
+                    Spacer(modifier = GlanceModifier.width(6.dp))
+                    Text(
+                        text = "▶",
+                        style = TextStyle(
+                            color = ColorProvider(Color.LightGray),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        modifier = GlanceModifier.clickable(
+                            actionRunCallback<WidgetPageAction>(
+                                actionParametersOf(
+                                    WidgetPageAction.DirectionKey to "next",
+                                    WidgetPageAction.TotalAssetsKey to totalAssets,
+                                    WidgetPageAction.PageSizeKey to pageSize
+                                )
+                            )
+                        )
+                    )
+                }
+            }
         }
         rightContent()
     }
@@ -315,40 +394,49 @@ private fun SmallWidgetLayout(
 @Composable
 private fun MediumWidgetLayout(
     assets: List<AssetEntity>,
+    pagedAssets: List<AssetEntity>,
     quotes: Map<String, Quote>,
     currency: String,
     showFng: Boolean,
     fngValue: Int,
     mode: WidgetMode,
-    accentColor: Color
+    accentColor: Color,
+    currentPage: Int,
+    pageSize: Int
 ) {
     val context = LocalContext.current
     val density = context.resources.displayMetrics.density
     
     Column(modifier = GlanceModifier.fillMaxSize()) {
-        WidgetHeader(accentColor, rightContent = {
-            if (showFng) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "Fear & Greed",
-                        style = TextStyle(color = ColorProvider(Color.Gray), fontSize = 9.sp)
-                    )
-                    Spacer(modifier = GlanceModifier.width(5.dp))
-                    val fngBitmap = drawFngMini(fngValue, 24, density)
-                    Image(
-                        provider = ImageProvider(fngBitmap),
-                        contentDescription = null,
-                        modifier = GlanceModifier.size(24.dp)
-                    )
+        WidgetHeader(
+            accentColor = accentColor,
+            totalAssets = assets.size,
+            pageSize = pageSize,
+            currentPage = currentPage,
+            rightContent = {
+                if (showFng) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "Fear & Greed",
+                            style = TextStyle(color = ColorProvider(Color.Gray), fontSize = 9.sp)
+                        )
+                        Spacer(modifier = GlanceModifier.width(5.dp))
+                        val fngBitmap = drawFngMini(fngValue, 24, density)
+                        Image(
+                            provider = ImageProvider(fngBitmap),
+                            contentDescription = null,
+                            modifier = GlanceModifier.size(24.dp)
+                        )
+                    }
                 }
             }
-        })
+        )
         Spacer(modifier = GlanceModifier.height(6.dp))
         Column(
             modifier = GlanceModifier.fillMaxWidth().fillMaxHeight(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            assets.take(if (mode == WidgetMode.CHARTS) 2 else 3).forEachIndexed { index, asset ->
+            pagedAssets.forEachIndexed { index, asset ->
                 if (index > 0) Spacer(modifier = GlanceModifier.height(6.dp))
                 WidgetAssetRow(
                     asset = asset,
@@ -366,60 +454,69 @@ private fun MediumWidgetLayout(
 @Composable
 private fun LargeWidgetLayout(
     assets: List<AssetEntity>,
+    pagedAssets: List<AssetEntity>,
     quotes: Map<String, Quote>,
     currency: String,
     showFng: Boolean,
     fngValue: Int,
     fngClassification: String,
     mode: WidgetMode,
-    accentColor: Color
+    accentColor: Color,
+    currentPage: Int,
+    pageSize: Int
 ) {
     val context = LocalContext.current
     val density = context.resources.displayMetrics.density
     val timeStr = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
 
     Column(modifier = GlanceModifier.fillMaxSize()) {
-        WidgetHeader(accentColor, rightContent = {
-            if (showFng) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    val fngColor = when {
-                        fngValue < 25 -> Color(0xFFEF4444)
-                        fngValue < 45 -> Color(0xFFF59E0B)
-                        fngValue < 55 -> Color(0xFFEAB308)
-                        fngValue < 75 -> Color(0xFF84CC16)
-                        else -> Color(0xFF22C55E)
-                    }
-                    val fngLabel = when (fngClassification.lowercase()) {
-                        "extreme fear" -> "Extrémní strach"
-                        "fear" -> "Strach"
-                        "neutral" -> "Neutrální"
-                        "greed" -> "Chamtivost"
-                        "extreme greed" -> "Extrémní chamtivost"
-                        else -> fngClassification
-                    }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text(
-                            text = "Fear & Greed",
-                            style = TextStyle(color = ColorProvider(Color.Gray), fontSize = 8.sp)
+        WidgetHeader(
+            accentColor = accentColor,
+            totalAssets = assets.size,
+            pageSize = pageSize,
+            currentPage = currentPage,
+            rightContent = {
+                if (showFng) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        val fngColor = when {
+                            fngValue < 25 -> Color(0xFFEF4444)
+                            fngValue < 45 -> Color(0xFFF59E0B)
+                            fngValue < 55 -> Color(0xFFEAB308)
+                            fngValue < 75 -> Color(0xFF84CC16)
+                            else -> Color(0xFF22C55E)
+                        }
+                        val fngLabel = when (fngClassification.lowercase()) {
+                            "extreme fear" -> "Extrémní strach"
+                            "fear" -> "Strach"
+                            "neutral" -> "Neutrální"
+                            "greed" -> "Chamtivost"
+                            "extreme greed" -> "Extrémní chamtivost"
+                            else -> fngClassification
+                        }
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                text = "Fear & Greed",
+                                style = TextStyle(color = ColorProvider(Color.Gray), fontSize = 8.sp)
+                            )
+                            Text(
+                                text = fngLabel,
+                                style = TextStyle(color = ColorProvider(fngColor), fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            )
+                        }
+                        Spacer(modifier = GlanceModifier.width(6.dp))
+                        val fngBitmap = drawFngMini(fngValue, 28, density)
+                        Image(
+                            provider = ImageProvider(fngBitmap),
+                            contentDescription = null,
+                            modifier = GlanceModifier.size(28.dp)
                         )
-                        Text(
-                            text = fngLabel,
-                            style = TextStyle(color = ColorProvider(fngColor), fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                        )
                     }
-                    Spacer(modifier = GlanceModifier.width(6.dp))
-                    val fngBitmap = drawFngMini(fngValue, 28, density)
-                    Image(
-                        provider = ImageProvider(fngBitmap),
-                        contentDescription = null,
-                        modifier = GlanceModifier.size(28.dp)
-                    )
                 }
             }
-        })
+        )
         Spacer(modifier = GlanceModifier.height(6.dp))
         Column(modifier = GlanceModifier.defaultWeight()) {
-            assets.forEachIndexed { index, asset ->
+            pagedAssets.forEachIndexed { index, asset ->
                 if (index > 0) {
                     Box(modifier = GlanceModifier.fillMaxWidth().height(1.dp).background(Color(0x12FFFFFF))) {}
                 }

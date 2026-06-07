@@ -419,6 +419,7 @@ private fun HistoryCard(
                 LinePriceChart(
                     points = points,
                     color = lineColor,
+                    currency = state.currency,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(140.dp),

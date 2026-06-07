@@ -160,6 +160,7 @@ fun DetailScreen(
                             points = state.linePoints,
                             color = lineColor,
                             overlays = overlays,
+                            currency = state.currency,
                             modifier = Modifier.fillMaxSize(),
                         )
                     } else {

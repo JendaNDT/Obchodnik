@@ -81,7 +81,8 @@ class RefreshWorker(
                         sendNotification(
                             context = context,
                             title = "$assetSymbol: Cenové upozornění",
-                            message = "Cena aktiva $assetSymbol $direction $formattedTarget (aktuálně $formattedCurrent)."
+                            message = "Cena aktiva $assetSymbol $direction $formattedTarget (aktuálně $formattedCurrent).",
+                            assetId = alert.assetId
                         )
                     }
                 }
@@ -120,7 +121,7 @@ class RefreshWorker(
         }
     }
 
-    private fun sendNotification(context: Context, title: String, message: String) {
+    private fun sendNotification(context: Context, title: String, message: String, assetId: String) {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -136,6 +137,8 @@ class RefreshWorker(
 
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra(MainActivity.EXTRA_ASSET_ID, assetId)
+            data = android.net.Uri.parse("obchodnik://asset/$assetId")
         }
         val pendingIntent = PendingIntent.getActivity(
             context,
