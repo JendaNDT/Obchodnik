@@ -151,6 +151,8 @@ Datum: 2026-06-07
 - Trh: watchlist má lokální filtr podle symbolu/názvu a režimy řazení `Ručně`,
   `Růst`, `Pokles`, `Název` a `Cena`; čistou transformaci kryje
   `MarketListTransformerTest`.
+- Detail: line graf podporuje indikátory `SMA 7` a `SMA 30` jako overlay linky;
+  výpočet je v `MovingAverageCalculator` a kryje ho `MovingAverageCalculatorTest`.
 
 ## Stav
 - Verze: AGP 8.7.0, Kotlin 2.0.21, Compose BOM 2024.10.01, Glance 1.1.0,
@@ -161,7 +163,7 @@ Datum: 2026-06-07
 - `./gradlew :app:testDebugUnitTest --no-daemon` prošlo.
 - Kombinované ověření
   `./gradlew :app:testDebugUnitTest :app:assembleDebug --no-daemon` prošlo
-  2026-06-07 po dokončení filtrování a řazení watchlistu.
+  2026-06-07 po dokončení SMA indikátorů v detailu aktiva.
 - `./gradlew :app:assembleDebugAndroidTest --no-daemon` prošlo 2026-06-07
   jako kompilace instrumentovaných testů.
 - Room DB je verze 3 s exportem schémat (`app/schemas`) a verzovanými
@@ -177,6 +179,6 @@ Datum: 2026-06-07
 
 ## Nápady do budoucna
 - Sentry crash reporting (vyžaduje účet + DSN).
-- Rozšířené grafové indikátory.
 - Pokročilejší přehledy portfolia.
 - Uložené pohledy watchlistu.
+- Alert z detailu aktiva.

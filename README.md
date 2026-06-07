@@ -73,6 +73,7 @@ Vylepšení po 1.0:
 - Bezpečnost: API klíče šifrované přes Android Keystore (AES-256-GCM).
 - Detail a Trh: stáří dat, zdroj, notice při cache fallbacku, vysvětlení ETF
   zástupců a denních komoditních dat.
+- Detail: SMA 7 a SMA 30 indikátory nad line grafem.
 - Přístupnost: contentDescription pro grafy, gauge a sparkline (TalkBack).
 - Widget: tap na řádek otevře detail aktiva, tlačítko „↻ Obnovit".
 - Fonty: Hanken Grotesk + JetBrains Mono přes Downloadable Fonts.
@@ -82,9 +83,8 @@ Vylepšení po 1.0:
   názvu nebo ceny.
 - Widget: režimy Vyvážený, Ceny a Grafy.
 
-Otevřené nápady: crash reporting (Sentry — vyžaduje účet a DSN), rozšířené
-grafové indikátory, pokročilejší přehledy portfolia a uložené pohledy
-watchlistu.
+Otevřené nápady: crash reporting (Sentry — vyžaduje účet a DSN), pokročilejší
+přehledy portfolia, uložené pohledy watchlistu a alert z detailu aktiva.
 
 ## Design handoff
 

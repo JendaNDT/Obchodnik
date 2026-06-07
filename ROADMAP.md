@@ -35,6 +35,7 @@ Legenda: ✅ hotovo · ⏳ čeká · ✖ přeskočeno
 26. ✅ Detail + Trh: klikací vysvětlení ETF/komoditních aproximací
 27. ✅ Portfolio: export pozic a P/L do CSV přes systémový výběr souboru
 28. ✅ Trh: filtrování watchlistu a řazení podle růstu, poklesu, názvu nebo ceny
+29. ✅ Detail: SMA 7 a SMA 30 indikátory nad line grafem
 
-Nápady do budoucna: Sentry crash reporting (účet + DSN), rozšířené grafové
-indikátory, pokročilejší přehledy portfolia, uložené pohledy watchlistu.
+Nápady do budoucna: Sentry crash reporting (účet + DSN), pokročilejší přehledy
+portfolia, uložené pohledy watchlistu, alert z detailu aktiva.
