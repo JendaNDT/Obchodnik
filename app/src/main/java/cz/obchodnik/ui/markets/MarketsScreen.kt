@@ -25,6 +25,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
@@ -36,6 +37,8 @@ import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -50,6 +53,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -70,6 +74,8 @@ import cz.obchodnik.ui.theme.Obchodnik
 fun MarketsScreen(
     state: MarketsUiState,
     onCategorySelected: (MarketCategory) -> Unit,
+    onQueryChanged: (String) -> Unit,
+    onSortModeSelected: (MarketSortMode) -> Unit,
     onRefresh: () -> Unit,
     onSearch: () -> Unit,
     onOpenAsset: (String) -> Unit,
@@ -137,6 +143,15 @@ fun MarketsScreen(
                     onSelected = onCategorySelected,
                 )
             }
+            item {
+                WatchlistControls(
+                    query = state.query,
+                    selectedSortMode = state.sortMode,
+                    onQueryChanged = onQueryChanged,
+                    onSortModeSelected = onSortModeSelected,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
+                )
+            }
             if (state.errorMessage != null) {
                 item {
                     ErrorStrip(
@@ -173,7 +188,9 @@ fun MarketsScreen(
                     MarketAssetRow(
                         row = row,
                         currency = state.currency,
-                        showReorder = state.selectedCategory == MarketCategory.ALL,
+                        showReorder = state.selectedCategory == MarketCategory.ALL &&
+                            state.query.isBlank() &&
+                            state.sortMode == MarketSortMode.MANUAL,
                         canMoveUp = index > 0,
                         canMoveDown = index < state.assets.lastIndex,
                         onMoveUp = { onMoveAsset(row.asset.id, -1) },
@@ -187,6 +204,68 @@ fun MarketsScreen(
                 AddAssetCta(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
                     onClick = onSearch,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun WatchlistControls(
+    query: String,
+    selectedSortMode: MarketSortMode,
+    onQueryChanged: (String) -> Unit,
+    onSortModeSelected: (MarketSortMode) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val c = Obchodnik.colors
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        OutlinedTextField(
+            value = query,
+            onValueChange = onQueryChanged,
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            placeholder = { Text(text = "Filtrovat watchlist", color = c.text3, fontSize = 13.sp) },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Rounded.Search,
+                    contentDescription = null,
+                    tint = c.text3,
+                    modifier = Modifier.size(18.dp),
+                )
+            },
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = c.text,
+                unfocusedTextColor = c.text,
+                focusedBorderColor = c.borderStrong,
+                unfocusedBorderColor = c.border,
+                cursorColor = c.accent,
+                focusedContainerColor = c.surface,
+                unfocusedContainerColor = c.surface,
+            ),
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
+            MarketSortMode.entries.forEach { mode ->
+                val active = selectedSortMode == mode
+                Text(
+                    text = mode.label,
+                    color = if (active) c.onAccent else c.text2,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 11.sp,
+                    maxLines = 1,
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(
+                            color = if (active) c.accent else c.surface,
+                            shape = RoundedCornerShape(Obchodnik.radii.chip),
+                        )
+                        .border(
+                            BorderStroke(1.dp, if (active) c.accent else c.border),
+                            RoundedCornerShape(Obchodnik.radii.chip),
+                        )
+                        .clickable { onSortModeSelected(mode) }
+                        .padding(vertical = 7.dp),
                 )
             }
         }

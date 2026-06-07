@@ -26,29 +26,39 @@ class MarketsViewModel(
     private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
     private val selectedCategory = MutableStateFlow(MarketCategory.ALL)
+    private val query = MutableStateFlow("")
+    private val sortMode = MutableStateFlow(MarketSortMode.MANUAL)
     private val isRefreshing = MutableStateFlow(false)
     private val errorMessage = MutableStateFlow<String?>(null)
     private val noticeMessage = MutableStateFlow<String?>(null)
     private val refreshMessages = combine(errorMessage, noticeMessage) { error, notice -> error to notice }
+    private val controls = combine(selectedCategory, query, sortMode) { category, searchQuery, sort ->
+        MarketControls(category = category, query = searchQuery, sortMode = sort)
+    }
 
     val uiState = combine(
         watchlistRepository.observeWatchlist(),
         settingsRepository.settings.flatMapLatest { settings ->
             marketRepository.observeQuotes(settings.currency).map { quotes -> settings to quotes }
         },
-        selectedCategory,
+        controls,
         isRefreshing,
         refreshMessages,
-    ) { watchlist, settingsAndQuotes, category, refreshing, messages ->
+    ) { watchlist, settingsAndQuotes, controls, refreshing, messages ->
         val (settings, quotes) = settingsAndQuotes
         val (error, notice) = messages
-        val quotesByAsset = quotes.associateBy { it.assetId }
-        val filtered = watchlist
-            .filter { category.includes(it.type) }
-            .map { asset -> MarketAssetUi(asset = asset, quote = quotesByAsset[asset.id]) }
+        val filtered = MarketListTransformer.transform(
+            watchlist = watchlist,
+            quotes = quotes,
+            category = controls.category,
+            query = controls.query,
+            sortMode = controls.sortMode,
+        )
         MarketsUiState(
             assets = filtered,
-            selectedCategory = category,
+            selectedCategory = controls.category,
+            query = controls.query,
+            sortMode = controls.sortMode,
             currency = settings.currency,
             isLoading = watchlist.isEmpty() && refreshing,
             isRefreshing = refreshing,
@@ -70,6 +80,14 @@ class MarketsViewModel(
 
     fun selectCategory(category: MarketCategory) {
         selectedCategory.value = category
+    }
+
+    fun updateQuery(value: String) {
+        query.value = value
+    }
+
+    fun selectSortMode(mode: MarketSortMode) {
+        sortMode.value = mode
     }
 
     fun refresh(force: Boolean = true) {
@@ -119,3 +137,9 @@ class MarketsViewModel(
             }
     }
 }
+
+private data class MarketControls(
+    val category: MarketCategory,
+    val query: String,
+    val sortMode: MarketSortMode,
+)

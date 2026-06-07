@@ -6,6 +6,8 @@ import cz.obchodnik.domain.model.Quote
 data class MarketsUiState(
     val assets: List<MarketAssetUi> = emptyList(),
     val selectedCategory: MarketCategory = MarketCategory.ALL,
+    val query: String = "",
+    val sortMode: MarketSortMode = MarketSortMode.MANUAL,
     val currency: String = "usd",
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
@@ -17,3 +19,11 @@ data class MarketAssetUi(
     val asset: Asset,
     val quote: Quote?,
 )
+
+enum class MarketSortMode(val label: String) {
+    MANUAL("Ručně"),
+    GAINERS("Růst"),
+    LOSERS("Pokles"),
+    NAME("Název"),
+    PRICE("Cena"),
+}
