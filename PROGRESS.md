@@ -159,6 +159,11 @@ Datum: 2026-06-07
   nad známou aktuální cenou; výpočet cílové ceny kryje `AlertTargetPresetsTest`.
 - Trh: přidány vestavěné rychlé pohledy `Ruční`, `Roste`, `Padá`, `Krypto` a
   `Indexy`; model pohledů kryje `MarketQuickViewTest`.
+- Trh: uložené vlastní pohledy watchlistu – uživatel si uloží aktuální kombinaci
+  kategorie+řazení+filtr pod názvem (`SavedMarketView`), aplikuje ji a maže přes
+  chipy. Perzistence jako JSON v DataStore (`SettingsRepository`), odolný
+  `SavedMarketViewSerializer` (prázdné/rozbité/neznámé enumy). Kryjí
+  `SavedMarketViewSerializerTest` a `SettingsRepositorySavedViewsTest`.
 
 ## Stav
 - Verze: AGP 8.7.0, Kotlin 2.0.21, Compose BOM 2024.10.01, Glance 1.1.0,
@@ -187,5 +192,4 @@ Datum: 2026-06-07
 ## Nápady do budoucna
 - Sentry crash reporting (vyžaduje účet + DSN).
 - Pokročilejší přehledy portfolia.
-- Uložené vlastní pohledy watchlistu.
 - Opakované alerty.

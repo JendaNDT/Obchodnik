@@ -24,10 +24,8 @@ hotové, zkompilované, otestované a na GitHubu.
 
 ## Aktuální pracovní strom
 
-Pozor: poslední push na GitHubu je `6c0a3d0 Alerts: add quick target presets`.
-V lokálním pracovním stromu jsou navíc rozpracované, otestované a zatím
-necommitnuté vestavěné rychlé pohledy watchlistu (`MarketQuickView`,
-`MarketQuickViewTest`) a odpovídající aktualizace dokumentace.
+Veškeré vylepšení včetně uložených vlastních pohledů watchlistu je commitnuté
+a pushnuté na GitHub (větev `main`); pracovní strom je čistý.
 
 ## Pravidla spolupráce (shrnutí AGENTS.md)
 
@@ -87,8 +85,10 @@ Vylepšení po 1.0 (každé samostatný commit na GitHubu):
   řazení podle růstu, poklesu, názvu nebo ceny. Transformaci kryje
   `MarketListTransformerTest`.
 - Trh: vestavěné rychlé pohledy `Ruční`, `Roste`, `Padá`, `Krypto`, `Indexy`
-  nastavují existující kategorii/řazení/dotaz; model kryje `MarketQuickViewTest`
-  (aktuálně lokální necommitnutá změna).
+  nastavují existující kategorii/řazení/dotaz; model kryje `MarketQuickViewTest`.
+- Trh: uložené vlastní pohledy watchlistu – uložení/aplikace/mazání názvem
+  pojmenované kombinace filtr+řazení (`SavedMarketView`), perzistence jako JSON
+  v DataStore; kryjí `SavedMarketViewSerializerTest` a `SettingsRepositorySavedViewsTest`.
 - Widget: konfigurace má režimy `Vyvážený`, `Ceny` a `Grafy`.
 - Detail/Trh: klikací dialog vysvětluje ETF zástupce, denní komoditní data a
   měnový dopočet.
@@ -112,4 +112,3 @@ Vylepšení po 1.0 (každé samostatný commit na GitHubu):
 - Sentry crash reporting (vyžaduje účet + DSN).
 - Opakované alerty.
 - Pokročilejší přehledy portfolia.
-- Uložené vlastní pohledy watchlistu.

@@ -16,4 +16,5 @@ data class AppSettings(
     val avCountDate: String = "",
     val usdCzkRate: Double = 23.0,
     val usdCzkRateLastUpdated: Long = 0L,
+    val savedMarketViewsJson: String = "",
 )

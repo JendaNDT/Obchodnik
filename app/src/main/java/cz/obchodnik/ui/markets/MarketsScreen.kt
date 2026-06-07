@@ -5,6 +5,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,23 +24,27 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -77,6 +82,9 @@ fun MarketsScreen(
     onQueryChanged: (String) -> Unit,
     onSortModeSelected: (MarketSortMode) -> Unit,
     onQuickViewSelected: (MarketQuickView) -> Unit,
+    onApplySavedView: (SavedMarketView) -> Unit,
+    onSaveCurrentView: (String) -> Unit,
+    onDeleteSavedView: (String) -> Unit,
     onRefresh: () -> Unit,
     onSearch: () -> Unit,
     onOpenAsset: (String) -> Unit,
@@ -88,10 +96,20 @@ fun MarketsScreen(
     val listState = rememberLazyListState()
     var pullDistance by remember { mutableFloatStateOf(0f) }
     var dataInfoAssetType by remember { mutableStateOf<AssetType?>(null) }
+    var showSaveViewDialog by remember { mutableStateOf(false) }
     val pullThreshold = 92.dp
     val c = Obchodnik.colors
     dataInfoAssetType?.let { assetType ->
         DataApproximationDialog(assetType = assetType, onDismiss = { dataInfoAssetType = null })
+    }
+    if (showSaveViewDialog) {
+        SaveViewDialog(
+            onConfirm = { name ->
+                onSaveCurrentView(name)
+                showSaveViewDialog = false
+            },
+            onDismiss = { showSaveViewDialog = false },
+        )
     }
 
     Column(
@@ -148,6 +166,15 @@ fun MarketsScreen(
                 QuickViewChips(
                     active = state.activeQuickView,
                     onSelected = onQuickViewSelected,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
+                )
+            }
+            item {
+                SavedViewsRow(
+                    views = state.savedViews,
+                    onApply = onApplySavedView,
+                    onDelete = onDeleteSavedView,
+                    onSaveCurrent = { showSaveViewDialog = true },
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
                 )
             }
@@ -655,6 +682,122 @@ private fun AddAssetCta(
         Spacer(Modifier.width(8.dp))
         Text(text = "Přidat aktivum do watchlistu", color = c.text2, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
     }
+}
+
+@Composable
+private fun SavedViewsRow(
+    views: List<SavedMarketView>,
+    onApply: (SavedMarketView) -> Unit,
+    onDelete: (String) -> Unit,
+    onSaveCurrent: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val c = Obchodnik.colors
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Row(
+            modifier = Modifier
+                .background(c.surface, RoundedCornerShape(Obchodnik.radii.chip))
+                .border(BorderStroke(1.dp, c.border), RoundedCornerShape(Obchodnik.radii.chip))
+                .clickable { onSaveCurrent() }
+                .padding(horizontal = 9.dp, vertical = 7.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Add,
+                contentDescription = null,
+                tint = c.text2,
+                modifier = Modifier.size(14.dp),
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(
+                text = "Uložit pohled",
+                color = c.text2,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 11.sp,
+                maxLines = 1,
+            )
+        }
+        views.forEach { view ->
+            Row(
+                modifier = Modifier
+                    .background(c.surface, RoundedCornerShape(Obchodnik.radii.chip))
+                    .border(BorderStroke(1.dp, c.border), RoundedCornerShape(Obchodnik.radii.chip))
+                    .padding(start = 10.dp, end = 2.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = view.name,
+                    color = c.text2,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 11.sp,
+                    maxLines = 1,
+                    modifier = Modifier
+                        .clickable { onApply(view) }
+                        .padding(vertical = 7.dp),
+                )
+                IconButton(
+                    onClick = { onDelete(view.id) },
+                    modifier = Modifier.size(22.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Close,
+                        contentDescription = "Smazat pohled " + view.name,
+                        tint = c.text3,
+                        modifier = Modifier.size(13.dp),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SaveViewDialog(
+    onConfirm: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val c = Obchodnik.colors
+    var name by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = c.surface,
+        title = {
+            Text(text = "Uložit pohled", color = c.text, fontWeight = FontWeight.Bold)
+        },
+        text = {
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                singleLine = true,
+                placeholder = { Text(text = "Název pohledu", color = c.text3) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = c.text,
+                    unfocusedTextColor = c.text,
+                    focusedBorderColor = c.borderStrong,
+                    unfocusedBorderColor = c.border,
+                    cursorColor = c.accent,
+                    focusedContainerColor = c.surface,
+                    unfocusedContainerColor = c.surface,
+                ),
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(name) }, enabled = name.isNotBlank()) {
+                Text(text = "Uložit", color = if (name.isNotBlank()) c.accent else c.text3)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = "Zrušit", color = c.text2)
+            }
+        },
+    )
 }
 
 private fun LazyListState.isAtTop(): Boolean =

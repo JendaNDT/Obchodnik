@@ -44,6 +44,7 @@ class SettingsRepository(
                 avCountDate = prefs[Keys.avCountDate] ?: "",
                 usdCzkRate = prefs[Keys.usdCzkRate] ?: 23.0,
                 usdCzkRateLastUpdated = prefs[Keys.usdCzkRateLastUpdated] ?: 0L,
+                savedMarketViewsJson = prefs[Keys.savedMarketViewsJson] ?: "",
             )
         }
 
@@ -70,6 +71,9 @@ class SettingsRepository(
             prefs[Keys.usdCzkRateLastUpdated] = lastUpdated
         }
     }
+
+    suspend fun setSavedMarketViewsJson(json: String) =
+        update(Keys.savedMarketViewsJson, json)
 
     suspend fun setRefreshIntervalMinutes(minutes: Int) {
         update(Keys.refreshIntervalMinutes, if (minutes <= 0) 0 else minutes.coerceAtLeast(15))
@@ -103,5 +107,6 @@ class SettingsRepository(
         val avCountDate = stringPreferencesKey("av_count_date")
         val usdCzkRate = doublePreferencesKey("usd_czk_rate")
         val usdCzkRateLastUpdated = longPreferencesKey("usd_czk_rate_last_updated")
+        val savedMarketViewsJson = stringPreferencesKey("saved_market_views")
     }
 }

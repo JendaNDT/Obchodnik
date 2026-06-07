@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import java.util.UUID
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MarketsViewModel(
@@ -64,6 +65,7 @@ class MarketsViewModel(
                     it.sortMode == controls.sortMode &&
                     it.query == controls.query
             },
+            savedViews = SavedMarketViewSerializer.decode(settings.savedMarketViewsJson),
             currency = settings.currency,
             isLoading = watchlist.isEmpty() && refreshing,
             isRefreshing = refreshing,
@@ -99,6 +101,41 @@ class MarketsViewModel(
         selectedCategory.value = view.category
         query.value = view.query
         sortMode.value = view.sortMode
+    }
+
+    fun applySavedView(view: SavedMarketView) {
+        selectedCategory.value = view.category
+        query.value = view.query
+        sortMode.value = view.sortMode
+    }
+
+    fun saveCurrentView(name: String) {
+        val trimmedName = name.trim()
+        if (trimmedName.isEmpty()) return
+        viewModelScope.launch {
+            val currentJson = settingsRepository.settings.first().savedMarketViewsJson
+            val views = SavedMarketViewSerializer.decode(currentJson)
+            val newView = SavedMarketView(
+                id = UUID.randomUUID().toString(),
+                name = trimmedName,
+                category = selectedCategory.value,
+                sortMode = sortMode.value,
+                query = query.value.trim(),
+            )
+            settingsRepository.setSavedMarketViewsJson(
+                SavedMarketViewSerializer.encode(views + newView),
+            )
+        }
+    }
+
+    fun deleteSavedView(id: String) {
+        viewModelScope.launch {
+            val currentJson = settingsRepository.settings.first().savedMarketViewsJson
+            val views = SavedMarketViewSerializer.decode(currentJson)
+            settingsRepository.setSavedMarketViewsJson(
+                SavedMarketViewSerializer.encode(views.filterNot { it.id == id }),
+            )
+        }
     }
 
     fun refresh(force: Boolean = true) {
