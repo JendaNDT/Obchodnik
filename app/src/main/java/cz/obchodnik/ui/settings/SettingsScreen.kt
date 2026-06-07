@@ -340,7 +340,7 @@ fun SettingsScreen(
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         modifier = Modifier.clickable {
-                                            runCatching { uriHandler.openUri("https://developer.coingecko.com/") }
+                                            runCatching { uriHandler.openUri("https://www.coingecko.com/en/developers/dashboard") }
                                         }
                                     )
                                 }
