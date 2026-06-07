@@ -27,7 +27,7 @@ class ObchodnikDatabaseMigrationTest {
 
         val db = helper.runMigrationsAndValidate(
             TEST_DB,
-            3,
+            4,
             true,
             *ObchodnikDatabase.MIGRATIONS,
         )
@@ -41,6 +41,11 @@ class ObchodnikDatabaseMigrationTest {
             cursor.moveToFirst()
             assertEquals(true, cursor.isNull(0))
             assertEquals(true, cursor.isNull(1))
+        }
+        db.query("SELECT repeating, armed FROM alerts WHERE id = 1").use { cursor ->
+            cursor.moveToFirst()
+            assertEquals(0L, cursor.getLong(0))
+            assertEquals(1L, cursor.getLong(1))
         }
     }
 

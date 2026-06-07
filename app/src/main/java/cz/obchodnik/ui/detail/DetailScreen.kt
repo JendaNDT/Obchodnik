@@ -65,7 +65,7 @@ fun DetailScreen(
     onRange: (ChartRange) -> Unit,
     onToggleSma7: () -> Unit,
     onToggleSma30: () -> Unit,
-    onAddAlert: (String, Boolean, Double) -> Unit,
+    onAddAlert: (String, Boolean, Double, Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val c = Obchodnik.colors
@@ -83,8 +83,8 @@ fun DetailScreen(
                 initialAssetId = asset.id,
                 initialTarget = state.quote?.price,
                 onDismiss = { showAlertSheet = false },
-                onConfirm = { assetId, above, target ->
-                    onAddAlert(assetId, above, target)
+                onConfirm = { assetId, above, target, repeating ->
+                    onAddAlert(assetId, above, target, repeating)
                     showAlertSheet = false
                 },
             )

@@ -159,6 +159,12 @@ Datum: 2026-06-07
   nad známou aktuální cenou; výpočet cílové ceny kryje `AlertTargetPresetsTest`.
 - Trh: přidány vestavěné rychlé pohledy `Ruční`, `Roste`, `Padá`, `Krypto` a
   `Indexy`; model pohledů kryje `MarketQuickViewTest`.
+- Alerty: opakované alerty – v `AddAlertSheet` (Alerty i Detail) přepínač
+  Opakovat, v seznamu chip Opakovaný/Jednorázový. Opakovaný alert se po splnění
+  nevypne, jen se odzbrojí (`armed=false`) a znovu se ozve až po návratu ceny
+  zpět za cíl (hystereze). Rozhodování je v čisté funkci `AlertEvaluator`
+  (kryje `AlertEvaluatorTest`), `RefreshWorker` ji volá. DB posunuta na verzi 4
+  (`repeating`, `armed`), migrace `MIGRATION_3_4`, schéma `schemas/4.json`.
 - Trh: uložené vlastní pohledy watchlistu – uživatel si uloží aktuální kombinaci
   kategorie+řazení+filtr pod názvem (`SavedMarketView`), aplikuje ji a maže přes
   chipy. Perzistence jako JSON v DataStore (`SettingsRepository`), odolný
@@ -177,7 +183,7 @@ Datum: 2026-06-07
   2026-06-07 po dokončení vestavěných rychlých pohledů watchlistu.
 - `./gradlew :app:assembleDebugAndroidTest --no-daemon` prošlo 2026-06-07
   jako kompilace instrumentovaných testů.
-- Room DB je verze 3 s exportem schémat (`app/schemas`) a verzovanými
+- Room DB je verze 4 s exportem schémat (`app/schemas`) a verzovanými
   migracemi (`ObchodnikDatabase.MIGRATIONS`); destruktivní migrace jen pro
   downgrade.
 - Poslední push na GitHubu je `6c0a3d0 Alerts: add quick target presets`.
@@ -192,4 +198,3 @@ Datum: 2026-06-07
 ## Nápady do budoucna
 - Sentry crash reporting (vyžaduje účet + DSN).
 - Pokročilejší přehledy portfolia.
-- Opakované alerty.

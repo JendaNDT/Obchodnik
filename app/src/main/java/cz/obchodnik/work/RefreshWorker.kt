@@ -14,6 +14,7 @@ import androidx.work.WorkerParameters
 import cz.obchodnik.MainActivity
 import cz.obchodnik.ObchodnikApp
 import cz.obchodnik.core.format.MarketFormatters
+import cz.obchodnik.domain.AlertEvaluator
 import cz.obchodnik.domain.model.StaticAssetCatalog
 import cz.obchodnik.widget.ObchodnikWidget
 import kotlinx.coroutines.flow.first
@@ -53,36 +54,28 @@ class RefreshWorker(
                 for (alert in activeAlerts) {
                     val quote = marketRepository.cachedQuote(alert.assetId, currency) ?: continue
                     val currentPrice = quote.price
-                    val triggered = if (alert.above) {
-                        currentPrice >= alert.target
-                    } else {
-                        currentPrice <= alert.target
-                    }
+                    val outcome = AlertEvaluator.evaluate(
+                        alert = alert,
+                        price = currentPrice,
+                        currency = currency,
+                        now = System.currentTimeMillis(),
+                    ) ?: continue
 
-                    if (triggered) {
-                        // Deactivate the alert and record the trigger time
-                        val updatedAlert = alert.copy(
-                            enabled = false,
-                            triggeredAt = System.currentTimeMillis(),
-                            triggeredPrice = currentPrice,
-                            triggeredCurrency = currency,
+                    alertRepository.save(outcome.updatedAlert)
+
+                    // If user enabled notifications, post a local system notification
+                    if (outcome.notify && settings.notificationsEnabled) {
+                        val asset = StaticAssetCatalog.assets.find { it.id == alert.assetId }
+                        val assetSymbol = asset?.symbol ?: alert.assetId
+                        val direction = if (alert.above) "stoupl nad" else "klesl pod"
+                        val formattedTarget = MarketFormatters.price(alert.target, currency)
+                        val formattedCurrent = MarketFormatters.price(currentPrice, currency)
+
+                        sendNotification(
+                            context = context,
+                            title = "$assetSymbol: Cenové upozornění",
+                            message = "Cena aktiva $assetSymbol $direction $formattedTarget (aktuálně $formattedCurrent)."
                         )
-                        alertRepository.save(updatedAlert)
-
-                        // If user enabled notifications, post a local system notification
-                        if (settings.notificationsEnabled) {
-                            val asset = StaticAssetCatalog.assets.find { it.id == alert.assetId }
-                            val assetSymbol = asset?.symbol ?: alert.assetId
-                            val direction = if (alert.above) "stoupl nad" else "klesl pod"
-                            val formattedTarget = MarketFormatters.price(alert.target, currency)
-                            val formattedCurrent = MarketFormatters.price(currentPrice, currency)
-
-                            sendNotification(
-                                context = context,
-                                title = "$assetSymbol: Cenové upozornění",
-                                message = "Cena aktiva $assetSymbol $direction $formattedTarget (aktuálně $formattedCurrent)."
-                            )
-                        }
                     }
                 }
             }

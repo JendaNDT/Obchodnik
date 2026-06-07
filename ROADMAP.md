@@ -40,6 +40,7 @@ Legenda: ✅ hotovo · ⏳ čeká · ✖ přeskočeno
 31. ✅ Alerty: rychlé šablony cílové ceny +5 %, +10 %, -5 %, -10 %
 32. ✅ Trh: vestavěné rychlé pohledy Ruční, Roste, Padá, Krypto, Indexy
 33. ✅ Trh: uložené vlastní pohledy watchlistu (uložení/aplikace/mazání, perzistence v DataStore)
+34. ✅ Alerty: opakované alerty s hysterezí (přepínač Opakovat, re-arm po návratu ceny; DB v4)
 
 Nápady do budoucna: Sentry crash reporting (účet + DSN), pokročilejší přehledy
-portfolia, opakované alerty.
+portfolia.

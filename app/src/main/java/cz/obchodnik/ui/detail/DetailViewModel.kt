@@ -54,7 +54,7 @@ class DetailViewModel(
         _uiState.update { it.copy(showSma30 = !it.showSma30) }
     }
 
-    fun addAlert(assetId: String, above: Boolean, target: Double) {
+    fun addAlert(assetId: String, above: Boolean, target: Double, repeating: Boolean = false) {
         viewModelScope.launch {
             alertRepository.save(
                 PriceAlert(
@@ -66,6 +66,8 @@ class DetailViewModel(
                     triggeredAt = null,
                     triggeredPrice = null,
                     triggeredCurrency = null,
+                    repeating = repeating,
+                    armed = true,
                 ),
             )
         }

@@ -201,6 +201,49 @@ class AlertsViewModelTest {
         collectJob.cancel()
     }
 
+    @Test
+    fun `add repeating alert stores repeating and armed`() = testScope.runTest {
+        val viewModel = AlertsViewModel(
+            alertRepository = alertRepository,
+            watchlistRepository = watchlistRepository,
+            settingsRepository = settingsRepository
+        )
+
+        val collectJob = launch(UnconfinedTestDispatcher()) {
+            viewModel.uiState.collect {}
+        }
+
+        viewModel.addAlert("cg:bitcoin", above = true, target = 65000.0, repeating = true)
+
+        val alert = viewModel.uiState.value.items.first().alert
+        assertTrue(alert.repeating)
+        assertTrue(alert.armed)
+
+        collectJob.cancel()
+    }
+
+    @Test
+    fun `setRepeating toggles the repeating flag`() = testScope.runTest {
+        val viewModel = AlertsViewModel(
+            alertRepository = alertRepository,
+            watchlistRepository = watchlistRepository,
+            settingsRepository = settingsRepository
+        )
+
+        val collectJob = launch(UnconfinedTestDispatcher()) {
+            viewModel.uiState.collect {}
+        }
+
+        viewModel.addAlert("cg:bitcoin", above = true, target = 65000.0)
+        val alert = viewModel.uiState.value.items.first().alert
+        assertFalse(alert.repeating)
+
+        viewModel.setRepeating(alert, true)
+        assertTrue(viewModel.uiState.value.items.first().alert.repeating)
+
+        collectJob.cancel()
+    }
+
     private class FakeAlertDao : AlertDao {
         private val _alerts = MutableStateFlow<List<AlertEntity>>(emptyList())
 

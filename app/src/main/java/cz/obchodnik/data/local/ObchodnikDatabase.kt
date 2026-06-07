@@ -23,7 +23,7 @@ import cz.obchodnik.data.local.entity.QuoteEntity
         HoldingEntity::class,
         AlertEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 abstract class ObchodnikDatabase : RoomDatabase() {
@@ -47,6 +47,13 @@ abstract class ObchodnikDatabase : RoomDatabase() {
             }
         }
 
-        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_2_3)
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE alerts ADD COLUMN repeating INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE alerts ADD COLUMN armed INTEGER NOT NULL DEFAULT 1")
+            }
+        }
+
+        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_2_3, MIGRATION_3_4)
     }
 }

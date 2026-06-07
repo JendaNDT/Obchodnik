@@ -13,4 +13,6 @@ data class AlertEntity(
     val triggeredAt: Long?,
     val triggeredPrice: Double? = null,
     val triggeredCurrency: String? = null,
+    val repeating: Boolean = false,
+    val armed: Boolean = true,
 )

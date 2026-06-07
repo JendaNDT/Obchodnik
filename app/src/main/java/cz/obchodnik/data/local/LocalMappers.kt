@@ -91,6 +91,8 @@ fun AlertEntity.toDomain(): PriceAlert =
         triggeredAt = triggeredAt,
         triggeredPrice = triggeredPrice,
         triggeredCurrency = triggeredCurrency,
+        repeating = repeating,
+        armed = armed,
     )
 
 fun PriceAlert.toEntity(): AlertEntity =
@@ -103,6 +105,8 @@ fun PriceAlert.toEntity(): AlertEntity =
         triggeredAt = triggeredAt,
         triggeredPrice = triggeredPrice,
         triggeredCurrency = triggeredCurrency,
+        repeating = repeating,
+        armed = armed,
     )
 
 fun pricePointsToEntity(

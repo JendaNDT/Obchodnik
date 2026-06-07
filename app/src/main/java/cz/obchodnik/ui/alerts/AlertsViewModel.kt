@@ -59,7 +59,7 @@ class AlertsViewModel(
         initialValue = AlertsUiState(isLoading = true)
     )
 
-    fun addAlert(assetId: String, above: Boolean, target: Double) {
+    fun addAlert(assetId: String, above: Boolean, target: Double, repeating: Boolean = false) {
         viewModelScope.launch {
             val alert = PriceAlert(
                 id = 0,
@@ -70,8 +70,16 @@ class AlertsViewModel(
                 triggeredAt = null,
                 triggeredPrice = null,
                 triggeredCurrency = null,
+                repeating = repeating,
+                armed = true,
             )
             alertRepository.save(alert)
+        }
+    }
+
+    fun setRepeating(alert: PriceAlert, repeating: Boolean) {
+        viewModelScope.launch {
+            alertRepository.save(alert.copy(repeating = repeating))
         }
     }
 
@@ -80,6 +88,7 @@ class AlertsViewModel(
             val updated = if (enabled) {
                 alert.copy(
                     enabled = true,
+                    armed = true,
                     triggeredAt = null,
                     triggeredPrice = null,
                     triggeredCurrency = null,

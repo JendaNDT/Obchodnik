@@ -27,6 +27,7 @@ import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.NotificationsNone
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
@@ -72,8 +73,9 @@ import java.util.Locale
 @Composable
 fun AlertsScreen(
     state: AlertsUiState,
-    onAddAlert: (String, Boolean, Double) -> Unit,
+    onAddAlert: (String, Boolean, Double, Boolean) -> Unit,
     onToggleAlert: (PriceAlert, Boolean) -> Unit,
+    onSetRepeating: (PriceAlert, Boolean) -> Unit,
     onReactivateAlert: (PriceAlert) -> Unit,
     onDeleteAlert: (PriceAlert) -> Unit,
     modifier: Modifier = Modifier,
@@ -109,6 +111,7 @@ fun AlertsScreen(
                         currency = state.currency,
                         onToggle = { enabled -> onToggleAlert(item.alert, enabled) },
                         onReactivate = { onReactivateAlert(item.alert) },
+                        onSetRepeating = { repeating -> onSetRepeating(item.alert, repeating) },
                         onDelete = { onDeleteAlert(item.alert) }
                     )
                 }
@@ -121,8 +124,8 @@ fun AlertsScreen(
             watchlist = state.allWatchlistAssets,
             currency = state.currency,
             onDismiss = { showSheet = false },
-            onConfirm = { assetId, above, target ->
-                onAddAlert(assetId, above, target)
+            onConfirm = { assetId, above, target, repeating ->
+                onAddAlert(assetId, above, target, repeating)
                 showSheet = false
             }
         )
@@ -158,6 +161,7 @@ private fun AlertRow(
     currency: String,
     onToggle: (Boolean) -> Unit,
     onReactivate: () -> Unit,
+    onSetRepeating: (Boolean) -> Unit,
     onDelete: () -> Unit,
 ) {
     val c = Obchodnik.colors
@@ -186,6 +190,34 @@ private fun AlertRow(
                         color = c.text2,
                         fontFamily = JetBrainsMono,
                         fontSize = 12.sp
+                    )
+                }
+                Spacer(Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(Obchodnik.radii.chip))
+                        .background(if (item.alert.repeating) c.accent.copy(alpha = 0.16f) else c.surface2)
+                        .border(
+                            1.dp,
+                            if (item.alert.repeating) c.accent else c.border,
+                            RoundedCornerShape(Obchodnik.radii.chip),
+                        )
+                        .clickable { onSetRepeating(!item.alert.repeating) }
+                        .padding(horizontal = 9.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Repeat,
+                        contentDescription = null,
+                        tint = if (item.alert.repeating) c.accent else c.text3,
+                        modifier = Modifier.size(13.dp),
+                    )
+                    Spacer(Modifier.width(5.dp))
+                    Text(
+                        text = if (item.alert.repeating) "Opakovaný" else "Jednorázový",
+                        color = if (item.alert.repeating) c.accent else c.text2,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
                     )
                 }
                 Spacer(Modifier.height(4.dp))
@@ -324,7 +356,7 @@ fun AddAlertSheet(
     initialTarget: Double? = null,
     referencePrice: Double? = initialTarget,
     onDismiss: () -> Unit,
-    onConfirm: (String, Boolean, Double) -> Unit,
+    onConfirm: (String, Boolean, Double, Boolean) -> Unit,
 ) {
     val c = Obchodnik.colors
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -336,6 +368,7 @@ fun AddAlertSheet(
         mutableStateOf(initialTarget?.takeIf { it > 0.0 }?.toString().orEmpty())
     }
     var isAbove by remember { mutableStateOf(true) }
+    var repeating by remember { mutableStateOf(false) }
 
     var expanded by remember { mutableStateOf(false) }
 
@@ -523,6 +556,37 @@ fun AddAlertSheet(
                 modifier = Modifier.fillMaxWidth()
             )
 
+            Spacer(Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Opakovat",
+                        color = c.text,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp,
+                    )
+                    Text(
+                        text = "Po splnění zůstane aktivní a ozve se znovu při dalším překročení.",
+                        color = c.text3,
+                        fontSize = 12.sp,
+                    )
+                }
+                Switch(
+                    checked = repeating,
+                    onCheckedChange = { repeating = it },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = c.onAccent,
+                        checkedTrackColor = c.accent,
+                        uncheckedThumbColor = c.text3,
+                        uncheckedTrackColor = c.surface,
+                    ),
+                )
+            }
+
             Spacer(Modifier.height(24.dp))
 
             // Create Button
@@ -533,7 +597,7 @@ fun AddAlertSheet(
                 onClick = {
                     val asset = selectedAsset
                     if (asset != null && isValid) {
-                        onConfirm(asset.id, isAbove, targetPrice)
+                        onConfirm(asset.id, isAbove, targetPrice, repeating)
                     }
                 },
                 enabled = isValid,
