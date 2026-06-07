@@ -73,6 +73,7 @@ fun SettingsScreen(
     onShowFngOnWidgetChanged: (Boolean) -> Unit,
     onCoinGeckoKeyChanged: (String) -> Unit,
     onAlphaVantageKeyChanged: (String) -> Unit,
+    onGeminiApiKeyChanged: (String) -> Unit,
     onNotificationsEnabledChanged: (Boolean) -> Unit,
     onResetOnboarding: () -> Unit,
     onExportData: (Uri, Boolean) -> Unit,
@@ -380,6 +381,39 @@ fun SettingsScreen(
                                     value = state.settings.alphaVantageKey,
                                     onValueChange = onAlphaVantageKeyChanged,
                                     placeholder = "Zadejte Alpha Vantage klíč"
+                                )
+                            }
+
+                            Column {
+                                Text(
+                                    text = "Google Gemini API klíč",
+                                    color = c.text,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 14.sp
+                                )
+                                Text(
+                                    text = "AI tržní analýza. Nutné pro generování predikcí v detailu aktiva.",
+                                    color = c.text3,
+                                    fontSize = 11.sp,
+                                )
+                                Row(
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Získat bezplatný klíč v Google AI Studio ↗",
+                                        color = c.accent,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        modifier = Modifier.clickable {
+                                            runCatching { uriHandler.openUri("https://aistudio.google.com/") }
+                                        }
+                                    )
+                                }
+                                SettingsTextField(
+                                    value = state.settings.geminiApiKey,
+                                    onValueChange = onGeminiApiKeyChanged,
+                                    placeholder = "Zadejte Gemini API klíč"
                                 )
                             }
                         }

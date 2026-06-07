@@ -19,6 +19,7 @@ junit = "4.13.2"
 coroutinesTest = "1.9.0"
 androidxJunit = "1.2.1"
 espresso = "3.6.1"
+googleAi = "0.9.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -62,6 +63,7 @@ androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "a
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+google-ai-client = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "googleAi" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -38,6 +38,7 @@ class SettingsRepository(
                 showFngOnWidget = prefs[Keys.showFngOnWidget] ?: true,
                 coingeckoKey = crypto.decrypt(prefs[Keys.coingeckoKey] ?: ""),
                 alphaVantageKey = crypto.decrypt(prefs[Keys.alphaVantageKey] ?: ""),
+                geminiApiKey = crypto.decrypt(prefs[Keys.geminiApiKey] ?: ""),
                 onboardingDone = prefs[Keys.onboardingDone] ?: false,
                 notificationsEnabled = prefs[Keys.notificationsEnabled] ?: false,
                 avDailyCount = prefs[Keys.avDailyCount] ?: 0,
@@ -58,6 +59,7 @@ class SettingsRepository(
     suspend fun setShowFngOnWidget(show: Boolean) = update(Keys.showFngOnWidget, show)
     suspend fun setCoinGeckoKey(key: String) = update(Keys.coingeckoKey, crypto.encrypt(key.trim()))
     suspend fun setAlphaVantageKey(key: String) = update(Keys.alphaVantageKey, crypto.encrypt(key.trim()))
+    suspend fun setGeminiApiKey(key: String) = update(Keys.geminiApiKey, crypto.encrypt(key.trim()))
     suspend fun setOnboardingDone(done: Boolean) = update(Keys.onboardingDone, done)
     suspend fun setNotificationsEnabled(enabled: Boolean) = update(Keys.notificationsEnabled, enabled)
     suspend fun setAlphaVantageDailyCount(count: Int, date: String) {
@@ -110,6 +112,7 @@ class SettingsRepository(
         val showFngOnWidget = booleanPreferencesKey("show_fng_on_widget")
         val coingeckoKey = stringPreferencesKey("coingecko_key")
         val alphaVantageKey = stringPreferencesKey("alpha_vantage_key")
+        val geminiApiKey = stringPreferencesKey("gemini_api_key")
         val onboardingDone = booleanPreferencesKey("onboarding_done")
         val notificationsEnabled = booleanPreferencesKey("notifications_enabled")
         val avDailyCount = intPreferencesKey("av_daily_count")

@@ -67,6 +67,8 @@ fun DetailScreen(
     onToggleSma7: () -> Unit,
     onToggleSma30: () -> Unit,
     onAddAlert: (String, Boolean, Double, Boolean) -> Unit,
+    onNavigateToSettings: () -> Unit,
+    onGenerateAiAnalysis: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val c = Obchodnik.colors
@@ -195,6 +197,14 @@ fun DetailScreen(
             }
             item {
                 StatsGrid(state = state, modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
+            }
+            item {
+                AiAnalysisCard(
+                    state = state,
+                    onNavigateToSettings = onNavigateToSettings,
+                    onGenerate = onGenerateAiAnalysis,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
             }
             item {
                 DataInfoFooter(
@@ -516,3 +526,146 @@ private fun Double.format1(): String =
     java.text.NumberFormat.getNumberInstance(java.util.Locale("cs", "CZ")).apply {
         maximumFractionDigits = 1
     }.format(this)
+
+@Composable
+private fun AiAnalysisCard(
+    state: DetailUiState,
+    onNavigateToSettings: () -> Unit,
+    onGenerate: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val c = Obchodnik.colors
+    ObchodnikCard(
+        modifier = modifier.fillMaxWidth(),
+        padding = PaddingValues(14.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "AI TRŽNÍ ANALÝZA",
+                    color = c.text3,
+                    fontFamily = JetBrainsMono,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 10.sp
+                )
+                
+                Text(
+                    text = "Gemini 1.5 Flash",
+                    color = c.accent.copy(alpha = 0.85f),
+                    fontFamily = JetBrainsMono,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 9.sp,
+                    modifier = Modifier
+                        .background(c.accent.copy(alpha = 0.08f), RoundedCornerShape(Obchodnik.radii.chip))
+                        .border(BorderStroke(1.dp, c.accent.copy(alpha = 0.2f)), RoundedCornerShape(Obchodnik.radii.chip))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                )
+            }
+
+            if (state.aiAnalysisLoading) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    androidx.compose.material3.CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = c.accent,
+                        strokeWidth = 2.dp
+                    )
+                    Text(
+                        text = "AI analyzuje trh a historické trendy...",
+                        color = c.text3,
+                        fontSize = 11.sp
+                    )
+                }
+            } else if (!state.hasGeminiApiKey) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Pro spuštění AI analýzy je nutné nejprve vložit Gemini API klíč v Nastavení.",
+                        color = c.text2,
+                        fontSize = 12.sp
+                    )
+                    androidx.compose.material3.Button(
+                        onClick = onNavigateToSettings,
+                        shape = RoundedCornerShape(Obchodnik.radii.chip),
+                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                            containerColor = c.accent,
+                            contentColor = c.onAccent
+                        )
+                    ) {
+                        Text(text = "Přejít do nastavení", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            } else if (state.aiAnalysisError != null) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = state.aiAnalysisError,
+                        color = c.down,
+                        fontSize = 12.sp
+                    )
+                    androidx.compose.material3.Button(
+                        onClick = onGenerate,
+                        shape = RoundedCornerShape(Obchodnik.radii.chip),
+                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                            containerColor = c.accent,
+                            contentColor = c.onAccent
+                        )
+                    ) {
+                        Text(text = "Zkusit znovu", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            } else if (state.aiAnalysisText != null) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = state.aiAnalysisText,
+                        color = c.text,
+                        fontSize = 12.sp,
+                        lineHeight = 16.sp
+                    )
+                    Text(
+                        text = "Analýza vygenerována z aktuálních dat na obrazovce.",
+                        color = c.text3,
+                        fontSize = 9.sp,
+                        fontFamily = JetBrainsMono
+                    )
+                }
+            } else {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Získejte rychlý přehled trendu a odhad budoucího vývoje zpracovaný umělou inteligencí.",
+                        color = c.text2,
+                        fontSize = 12.sp
+                    )
+                    androidx.compose.material3.Button(
+                        onClick = onGenerate,
+                        shape = RoundedCornerShape(Obchodnik.radii.chip),
+                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                            containerColor = c.accent,
+                            contentColor = c.onAccent
+                        )
+                    ) {
+                        Text(text = "Generovat analýzu", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+    }
+}
+

@@ -87,7 +87,9 @@ class DetailViewModel(
     }
 
     private suspend fun loadAssetAndData(force: Boolean) {
-        val currency = settingsRepository.settings.first().currency
+        val settings = settingsRepository.settings.first()
+        val currency = settings.currency
+        val hasGeminiApiKey = settings.geminiApiKey.isNotBlank()
         val asset = resolveAsset()
         if (asset == null) {
             _uiState.update {
@@ -101,6 +103,7 @@ class DetailViewModel(
             it.copy(
                 asset = asset,
                 currency = currency,
+                hasGeminiApiKey = hasGeminiApiKey,
                 inWatchlist = watched,
                 isLoading = true,
                 errorMessage = null,
@@ -162,6 +165,77 @@ class DetailViewModel(
     private suspend fun resolveAsset(): Asset? =
         watchlistRepository.assetById(assetId)
             ?: StaticAssetCatalog.assets.firstOrNull { it.id == assetId }
+
+    fun generateAiAnalysis() {
+        viewModelScope.launch {
+            val settings = settingsRepository.settings.first()
+            val apiKey = settings.geminiApiKey
+            if (apiKey.isBlank()) {
+                _uiState.update {
+                    it.copy(
+                        aiAnalysisError = "Chybí Gemini API klíč v nastavení.",
+                        hasGeminiApiKey = false
+                    )
+                }
+                return@launch
+            }
+
+            val state = _uiState.value
+            val asset = state.asset ?: return@launch
+            val quote = state.quote ?: return@launch
+            val fngValue = settings.fngValue
+            val fngClassification = settings.fngClassification
+
+            _uiState.update {
+                it.copy(
+                    aiAnalysisLoading = true,
+                    aiAnalysisError = null,
+                    hasGeminiApiKey = true
+                )
+            }
+
+            try {
+                val generativeModel = com.google.ai.client.generativeai.GenerativeModel(
+                    modelName = "gemini-1.5-flash",
+                    apiKey = apiKey
+                )
+
+                val pricesStr = state.linePoints.takeLast(15).map {
+                    cz.obchodnik.core.format.MarketFormatters.price(it.price, state.currency)
+                }.joinToString(", ")
+
+                val prompt = """
+                    Jsi zkušený a pragmatický finanční analytik. Analyzuj aktivum ${asset.name} (${asset.symbol}).
+                    Aktuální cena: ${cz.obchodnik.core.format.MarketFormatters.price(quote.price, state.currency)}, změna za 24h: ${quote.change24hPct}%.
+                    Poslední historické ceny: $pricesStr.
+                    Tržní sentiment (Fear & Greed Index): $fngValue ($fngClassification).
+                    SMA 7: ${if (state.showSma7 && state.sma7Points.isNotEmpty()) "aktivní" else "neaktivní"}, SMA 30: ${if (state.showSma30 && state.sma30Points.isNotEmpty()) "aktivní" else "neaktivní"}.
+                    
+                    Napiš stručnou analýzu (max 120 slov) aktuálního trendu a možný krátkodobý vývoj v češtině.
+                    Udržuj profesionální, věcný a klidný tón. Nepoužívej ŽÁDNÉ emoji.
+                    Na konec přidej krátkou větu jako upozornění, že se nejedná o investiční poradenství.
+                """.trimIndent()
+
+                val response = generativeModel.generateContent(prompt)
+                val text = response.text
+
+                _uiState.update {
+                    it.copy(
+                        aiAnalysisText = text,
+                        aiAnalysisLoading = false,
+                        aiAnalysisError = null
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        aiAnalysisLoading = false,
+                        aiAnalysisError = "Chyba při komunikaci s AI: ${e.localizedMessage ?: "Neznámá chyba"}"
+                    )
+                }
+            }
+        }
+    }
 
     companion object {
         fun factory(app: ObchodnikApp, assetId: String): ViewModelProvider.Factory =

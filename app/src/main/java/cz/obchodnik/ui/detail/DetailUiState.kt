@@ -22,6 +22,10 @@ data class DetailUiState(
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
     val noticeMessage: String? = null,
+    val aiAnalysisText: String? = null,
+    val aiAnalysisLoading: Boolean = false,
+    val aiAnalysisError: String? = null,
+    val hasGeminiApiKey: Boolean = false,
 )
 
 enum class ChartMode(val label: String) {

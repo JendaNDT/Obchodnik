@@ -301,6 +301,8 @@ private fun ObchodnikAppContent(
                     onToggleSma7 = viewModel::toggleSma7,
                     onToggleSma30 = viewModel::toggleSma30,
                     onAddAlert = viewModel::addAlert,
+                    onNavigateToSettings = { navController.navigate("settings") },
+                    onGenerateAiAnalysis = viewModel::generateAiAnalysis,
                 )
             }
             composable("settings") {
@@ -317,6 +319,7 @@ private fun ObchodnikAppContent(
                     onShowFngOnWidgetChanged = viewModel::setShowFngOnWidget,
                     onCoinGeckoKeyChanged = viewModel::setCoinGeckoKey,
                     onAlphaVantageKeyChanged = viewModel::setAlphaVantageKey,
+                    onGeminiApiKeyChanged = viewModel::setGeminiApiKey,
                     onNotificationsEnabledChanged = viewModel::setNotificationsEnabled,
                     onResetOnboarding = viewModel::resetOnboarding,
                     onExportData = viewModel::exportData,

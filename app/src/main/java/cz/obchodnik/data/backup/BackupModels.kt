@@ -61,6 +61,7 @@ data class BackupSettings(
     val showFngOnWidget: Boolean = true,
     val coingeckoKey: String? = null,
     val alphaVantageKey: String? = null,
+    val geminiApiKey: String? = null,
     val notificationsEnabled: Boolean = false,
 )
 
@@ -103,5 +104,6 @@ fun AppSettings.toBackup(includeApiKeys: Boolean = false): BackupSettings =
         showFngOnWidget = showFngOnWidget,
         coingeckoKey = coingeckoKey.takeIf { includeApiKeys },
         alphaVantageKey = alphaVantageKey.takeIf { includeApiKeys },
+        geminiApiKey = geminiApiKey.takeIf { includeApiKeys },
         notificationsEnabled = notificationsEnabled,
     )

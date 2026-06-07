@@ -103,6 +103,9 @@ dependencies {
     // Image loading (asset logos)
     implementation(libs.coil.compose)
 
+    // Generative AI (Gemini)
+    implementation(libs.google.ai.client)
+
     // Tests
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

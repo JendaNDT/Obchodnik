@@ -105,6 +105,12 @@ class SettingsViewModel(
         }
     }
 
+    fun setGeminiApiKey(key: String) {
+        viewModelScope.launch {
+            settingsRepository.setGeminiApiKey(key)
+        }
+    }
+
     fun setNotificationsEnabled(enabled: Boolean) {
         viewModelScope.launch {
             settingsRepository.setNotificationsEnabled(enabled)

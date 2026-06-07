@@ -108,6 +108,7 @@ class BackupRepositoryImportTest {
                 showFngOnWidget = false,
                 coingeckoKey = "cg_secret",
                 alphaVantageKey = "av_secret",
+                geminiApiKey = "gemini_secret",
                 notificationsEnabled = true,
             ),
         )
@@ -147,6 +148,7 @@ class BackupRepositoryImportTest {
         assertFalse(settings.showFngOnWidget)
         assertEquals("cg_secret", settings.coingeckoKey)
         assertEquals("av_secret", settings.alphaVantageKey)
+        assertEquals("gemini_secret", settings.geminiApiKey)
         assertTrue(settings.notificationsEnabled)
     }
 
@@ -154,6 +156,7 @@ class BackupRepositoryImportTest {
     fun `import without api keys keeps existing stored keys`() = runTest(testDispatcher) {
         settingsRepository.setCoinGeckoKey("existing_cg")
         settingsRepository.setAlphaVantageKey("existing_av")
+        settingsRepository.setGeminiApiKey("existing_gemini")
 
         repository.import(
             BackupData(
@@ -161,6 +164,7 @@ class BackupRepositoryImportTest {
                     theme = "mono",
                     coingeckoKey = null,
                     alphaVantageKey = null,
+                    geminiApiKey = null,
                 ),
             ),
         )
@@ -169,6 +173,7 @@ class BackupRepositoryImportTest {
         assertEquals("mono", settings.theme)
         assertEquals("existing_cg", settings.coingeckoKey)
         assertEquals("existing_av", settings.alphaVantageKey)
+        assertEquals("existing_gemini", settings.geminiApiKey)
     }
 
     private class FakeAssetStore : AssetLocalStore {

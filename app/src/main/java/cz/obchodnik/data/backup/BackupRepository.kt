@@ -25,9 +25,10 @@ data class BackupImportPreview(
     val alerts: Int,
     val includesCoinGeckoKey: Boolean,
     val includesAlphaVantageKey: Boolean,
+    val includesGeminiApiKey: Boolean,
 ) {
     val includesApiKeys: Boolean
-        get() = includesCoinGeckoKey || includesAlphaVantageKey
+        get() = includesCoinGeckoKey || includesAlphaVantageKey || includesGeminiApiKey
 }
 
 fun BackupData.toImportPreview(): BackupImportPreview =
@@ -41,6 +42,7 @@ fun BackupData.toImportPreview(): BackupImportPreview =
         alerts = alerts.size,
         includesCoinGeckoKey = !settings.coingeckoKey.isNullOrBlank(),
         includesAlphaVantageKey = !settings.alphaVantageKey.isNullOrBlank(),
+        includesGeminiApiKey = !settings.geminiApiKey.isNullOrBlank(),
     )
 
 /**
@@ -142,6 +144,7 @@ class BackupRepository(
         settingsRepository.setShowFngOnWidget(settings.showFngOnWidget)
         settings.coingeckoKey?.let { settingsRepository.setCoinGeckoKey(it) }
         settings.alphaVantageKey?.let { settingsRepository.setAlphaVantageKey(it) }
+        settings.geminiApiKey?.let { settingsRepository.setGeminiApiKey(it) }
         settingsRepository.setNotificationsEnabled(settings.notificationsEnabled)
     }
 }

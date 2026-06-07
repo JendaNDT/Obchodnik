@@ -10,6 +10,7 @@ data class AppSettings(
     val showFngOnWidget: Boolean = true,
     val coingeckoKey: String = "",
     val alphaVantageKey: String = "",
+    val geminiApiKey: String = "",
     val onboardingDone: Boolean = false,
     val notificationsEnabled: Boolean = false,
     val avDailyCount: Int = 0,
