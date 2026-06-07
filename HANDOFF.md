@@ -68,6 +68,8 @@ Vylepšení po 1.0 (každé samostatný commit na GitHubu):
 - Stáří dat: Trh a Detail zobrazují notice při cache fallbacku, limitu Alpha
   Vantage, chybějícím klíči nebo částečně neaktualizovaných datech.
 - Portfolio: existující pozice lze editovat.
+- Portfolio: export pozic a P/L do CSV přes systémový výběr souboru; formát
+  kryje `PortfolioCsvExporterTest`.
 - Trh: watchlist lze ručně řadit v kategorii „Vše".
 - Widget: konfigurace má režimy `Vyvážený`, `Ceny` a `Grafy`.
 - Detail/Trh: klikací dialog vysvětluje ETF zástupce, denní komoditní data a
@@ -91,5 +93,5 @@ Vylepšení po 1.0 (každé samostatný commit na GitHubu):
 
 - Sentry crash reporting (vyžaduje účet + DSN).
 - Pokročilejší filtrování a seskupování watchlistu.
-- Export portfolia do CSV.
 - Rozšířené grafové indikátory.
+- Pokročilejší přehledy portfolia.

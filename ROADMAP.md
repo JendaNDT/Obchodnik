@@ -33,6 +33,7 @@ Legenda: ✅ hotovo · ⏳ čeká · ✖ přeskočeno
 24. ✅ Trh: ruční řazení watchlistu
 25. ✅ Widget: režimy Vyvážený, Ceny a Grafy
 26. ✅ Detail + Trh: klikací vysvětlení ETF/komoditních aproximací
+27. ✅ Portfolio: export pozic a P/L do CSV přes systémový výběr souboru
 
 Nápady do budoucna: Sentry crash reporting (účet + DSN), pokročilejší filtr
-watchlistu, export portfolia do CSV, rozšířené grafové indikátory.
+watchlistu, rozšířené grafové indikátory, pokročilejší přehledy portfolia.

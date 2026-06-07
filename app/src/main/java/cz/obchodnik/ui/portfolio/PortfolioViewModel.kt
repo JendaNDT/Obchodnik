@@ -1,5 +1,8 @@
 package cz.obchodnik.ui.portfolio
 
+import android.content.Context
+import android.net.Uri
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -13,6 +16,7 @@ import cz.obchodnik.domain.model.Holding
 import cz.obchodnik.domain.model.Quote
 import cz.obchodnik.domain.model.StaticAssetCatalog
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -20,6 +24,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class PortfolioUiState(
     val items: List<PortfolioItem> = emptyList(),
@@ -48,6 +53,7 @@ class PortfolioViewModel(
     private val watchlistRepository: WatchlistRepository,
     private val marketRepository: MarketRepository,
     private val settingsRepository: SettingsRepository,
+    private val context: Context? = null,
 ) : ViewModel() {
 
     val uiState: StateFlow<PortfolioUiState> = settingsRepository.settings
@@ -133,6 +139,30 @@ class PortfolioViewModel(
         }
     }
 
+    fun exportCsv(uri: Uri, state: PortfolioUiState) {
+        viewModelScope.launch {
+            val result = runCatching {
+                val csvText = PortfolioCsvExporter.export(state)
+                withContext(Dispatchers.IO) {
+                    val ctx = context ?: error("Kontext nedostupný")
+                    ctx.contentResolver.openOutputStream(uri)?.use { out ->
+                        out.write(csvText.toByteArray(Charsets.UTF_8))
+                    } ?: error("Nelze otevřít soubor pro zápis")
+                }
+            }
+            context?.let { ctx ->
+                Toast.makeText(
+                    ctx,
+                    result.fold(
+                        onSuccess = { "Portfolio exportováno do CSV" },
+                        onFailure = { "Export selhal: ${it.message ?: "neznámá chyba"}" },
+                    ),
+                    Toast.LENGTH_SHORT,
+                ).show()
+            }
+        }
+    }
+
     companion object {
         fun factory(app: ObchodnikApp): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
@@ -143,6 +173,7 @@ class PortfolioViewModel(
                         watchlistRepository = app.container.watchlistRepository,
                         marketRepository = app.container.marketRepository,
                         settingsRepository = app.container.settingsRepository,
+                        context = app,
                     ) as T
                 }
             }

@@ -1,5 +1,8 @@
 package cz.obchodnik.ui.portfolio
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,6 +26,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.FileDownload
 import androidx.compose.material.icons.rounded.FolderOpen
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -70,21 +74,29 @@ fun PortfolioScreen(
     onAddPosition: (String, Double, Double) -> Unit,
     onUpdatePosition: (Holding, Double, Double) -> Unit,
     onDeletePosition: (Holding) -> Unit,
+    onExportCsv: (Uri) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val c = Obchodnik.colors
     var showSheet by remember { mutableStateOf(false) }
     var editingItem by remember { mutableStateOf<PortfolioItem?>(null) }
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/csv"),
+    ) { uri -> uri?.let(onExportCsv) }
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(c.bg)
     ) {
-        PortfolioTopBar(onAddClick = {
-            editingItem = null
-            showSheet = true
-        })
+        PortfolioTopBar(
+            canExport = state.items.isNotEmpty(),
+            onExportClick = { exportLauncher.launch("obchodnik-portfolio.csv") },
+            onAddClick = {
+                editingItem = null
+                showSheet = true
+            },
+        )
 
         if (state.isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -152,7 +164,11 @@ fun PortfolioScreen(
 }
 
 @Composable
-private fun PortfolioTopBar(onAddClick: () -> Unit) {
+private fun PortfolioTopBar(
+    canExport: Boolean,
+    onExportClick: () -> Unit,
+    onAddClick: () -> Unit,
+) {
     val c = Obchodnik.colors
     Row(
         modifier = Modifier
@@ -168,6 +184,13 @@ private fun PortfolioTopBar(onAddClick: () -> Unit) {
             fontSize = 22.sp,
             modifier = Modifier.weight(1f)
         )
+        IconButton(onClick = onExportClick, enabled = canExport) {
+            Icon(
+                imageVector = Icons.Rounded.FileDownload,
+                contentDescription = "Exportovat portfolio do CSV",
+                tint = if (canExport) c.text else c.text3.copy(alpha = 0.45f),
+            )
+        }
         IconButton(onClick = onAddClick) {
             Icon(Icons.Rounded.Add, contentDescription = "Přidat pozici", tint = c.text)
         }

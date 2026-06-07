@@ -77,12 +77,13 @@ Vylepšení po 1.0:
 - Widget: tap na řádek otevře detail aktiva, tlačítko „↻ Obnovit".
 - Fonty: Hanken Grotesk + JetBrains Mono přes Downloadable Fonts.
 - Alerty: historie spuštění včetně ceny a měny, možnost znovu aktivovat.
-- Portfolio: editace existujících pozic.
+- Portfolio: editace existujících pozic a export pozic s P/L do CSV.
 - Trh: ruční řazení watchlistu.
 - Widget: režimy Vyvážený, Ceny a Grafy.
 
 Otevřené nápady: crash reporting (Sentry — vyžaduje účet a DSN), pokročilejší
-filtrování watchlistu, export portfolia do CSV a rozšířené grafové indikátory.
+filtrování watchlistu, rozšířené grafové indikátory a pokročilejší přehledy
+portfolia.
 
 ## Design handoff
 

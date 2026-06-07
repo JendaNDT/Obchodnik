@@ -235,6 +235,7 @@ private fun ObchodnikAppContent(
                     onAddPosition = viewModel::addPosition,
                     onUpdatePosition = viewModel::updatePosition,
                     onDeletePosition = viewModel::deletePosition,
+                    onExportCsv = { uri -> viewModel.exportCsv(uri, state) },
                 )
             }
             composable("fng") {
