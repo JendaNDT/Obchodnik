@@ -49,6 +49,7 @@ import cz.obchodnik.ui.components.AssetIcon
 import cz.obchodnik.ui.components.CandlePriceChart
 import cz.obchodnik.ui.components.Change
 import cz.obchodnik.ui.components.DataApproximationDialog
+import cz.obchodnik.ui.components.LineChartOverlay
 import cz.obchodnik.ui.components.LinePriceChart
 import cz.obchodnik.ui.components.ObchodnikCard
 import cz.obchodnik.ui.theme.JetBrainsMono
@@ -61,6 +62,8 @@ fun DetailScreen(
     onToggleWatch: () -> Unit,
     onChartMode: (ChartMode) -> Unit,
     onRange: (ChartRange) -> Unit,
+    onToggleSma7: () -> Unit,
+    onToggleSma30: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val c = Obchodnik.colors
@@ -97,9 +100,27 @@ fun DetailScreen(
                         .padding(horizontal = 16.dp),
                 )
             }
+            if (state.chartMode == ChartMode.LINE) {
+                item {
+                    IndicatorToggleRow(
+                        state = state,
+                        onToggleSma7 = onToggleSma7,
+                        onToggleSma30 = onToggleSma30,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    )
+                }
+            }
             item {
                 val positive = (state.quote?.change24hPct ?: 0.0) >= 0.0
                 val lineColor = if (positive) c.up else c.down
+                val overlays = buildList {
+                    if (state.showSma7) {
+                        add(LineChartOverlay(points = state.sma7Points, color = c.accent))
+                    }
+                    if (state.showSma30) {
+                        add(LineChartOverlay(points = state.sma30Points, color = c.text2))
+                    }
+                }
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -117,6 +138,7 @@ fun DetailScreen(
                         LinePriceChart(
                             points = state.linePoints,
                             color = lineColor,
+                            overlays = overlays,
                             modifier = Modifier.fillMaxSize(),
                         )
                     } else {
@@ -168,6 +190,55 @@ fun DetailScreen(
             }
         }
     }
+}
+
+@Composable
+private fun IndicatorToggleRow(
+    state: DetailUiState,
+    onToggleSma7: () -> Unit,
+    onToggleSma30: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        IndicatorChip(
+            label = "SMA 7",
+            active = state.showSma7,
+            enabled = state.sma7Points.isNotEmpty(),
+            onClick = onToggleSma7,
+        )
+        IndicatorChip(
+            label = "SMA 30",
+            active = state.showSma30,
+            enabled = state.sma30Points.isNotEmpty(),
+            onClick = onToggleSma30,
+        )
+    }
+}
+
+@Composable
+private fun IndicatorChip(
+    label: String,
+    active: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    val c = Obchodnik.colors
+    Text(
+        text = label,
+        color = when {
+            active -> c.onAccent
+            enabled -> c.text2
+            else -> c.text3.copy(alpha = 0.45f)
+        },
+        fontFamily = JetBrainsMono,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 12.sp,
+        modifier = Modifier
+            .background(if (active) c.accent else c.surface, RoundedCornerShape(Obchodnik.radii.chip))
+            .border(BorderStroke(1.dp, if (active) c.accent else c.border), RoundedCornerShape(Obchodnik.radii.chip))
+            .clickable(enabled = enabled) { onClick() }
+            .padding(horizontal = 12.dp, vertical = 7.dp),
+    )
 }
 
 @Composable

@@ -20,10 +20,12 @@ fun LinePriceChart(
     points: List<PricePoint>,
     color: Color,
     modifier: Modifier = Modifier,
+    overlays: List<LineChartOverlay> = emptyList(),
 ) {
     Canvas(modifier = modifier) {
         if (points.size < 2) return@Canvas
-        val prices = points.map { it.price }
+        val overlayPoints = overlays.flatMap { it.points }
+        val prices = (points + overlayPoints).map { it.price }
         val min = prices.minOrNull() ?: return@Canvas
         val max = prices.maxOrNull() ?: return@Canvas
         val span = (max - min).takeIf { it > 0.0 } ?: 1.0
@@ -53,11 +55,34 @@ fun LinePriceChart(
         }
         drawPath(area, Brush.verticalGradient(listOf(color.copy(alpha = 0.24f), Color.Transparent)))
         drawPath(path, color = color, style = Stroke(2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+        overlays.forEach { overlay ->
+            if (overlay.points.size >= 2) {
+                val overlayPath = Path()
+                overlay.points.forEach { point ->
+                    val sourceIndex = points.indexOfFirst { it.timestamp == point.timestamp }
+                    if (sourceIndex >= 0) {
+                        val x = (sourceIndex.toFloat() / points.lastIndex.toFloat()) * size.width
+                        val y = topPad + chartHeight - (((point.price - min) / span).toFloat() * chartHeight)
+                        if (overlayPath.isEmpty) overlayPath.moveTo(x, y) else overlayPath.lineTo(x, y)
+                    }
+                }
+                drawPath(
+                    overlayPath,
+                    color = overlay.color,
+                    style = Stroke(1.5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round),
+                )
+            }
+        }
         val last = points.last().price
         val y = topPad + chartHeight - (((last - min) / span).toFloat() * chartHeight)
         drawCircle(color = color, radius = 3.dp.toPx(), center = Offset(size.width, y))
     }
 }
+
+data class LineChartOverlay(
+    val points: List<PricePoint>,
+    val color: Color,
+)
 
 @Composable
 fun CandlePriceChart(

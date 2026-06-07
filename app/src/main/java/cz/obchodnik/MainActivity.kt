@@ -290,6 +290,8 @@ private fun ObchodnikAppContent(
                     onToggleWatch = viewModel::toggleWatch,
                     onChartMode = viewModel::setChartMode,
                     onRange = viewModel::setRange,
+                    onToggleSma7 = viewModel::toggleSma7,
+                    onToggleSma30 = viewModel::toggleSma30,
                 )
             }
             composable("settings") {

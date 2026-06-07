@@ -43,6 +43,14 @@ class DetailViewModel(
         refreshChart(force = false)
     }
 
+    fun toggleSma7() {
+        _uiState.update { it.copy(showSma7 = !it.showSma7) }
+    }
+
+    fun toggleSma30() {
+        _uiState.update { it.copy(showSma30 = !it.showSma30) }
+    }
+
     fun toggleWatch() {
         viewModelScope.launch {
             val asset = _uiState.value.asset ?: return@launch
@@ -102,9 +110,12 @@ class DetailViewModel(
                 is Result.Success<*> -> {
                     if (state.chartMode == ChartMode.LINE) {
                         @Suppress("UNCHECKED_CAST")
+                        val points = result.data as List<cz.obchodnik.domain.model.PricePoint>
                         _uiState.update {
                             it.copy(
-                                linePoints = result.data as List<cz.obchodnik.domain.model.PricePoint>,
+                                linePoints = points,
+                                sma7Points = MovingAverageCalculator.simpleMovingAverage(points, 7),
+                                sma30Points = MovingAverageCalculator.simpleMovingAverage(points, 30),
                                 isLoading = false,
                                 noticeMessage = result.notice ?: it.noticeMessage,
                             )
