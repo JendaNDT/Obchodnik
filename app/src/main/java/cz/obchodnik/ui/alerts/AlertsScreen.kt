@@ -544,7 +544,7 @@ fun AddAlertSheet(
             OutlinedTextField(
                 value = targetPriceString,
                 onValueChange = { targetPriceString = it },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
                 placeholder = { Text("0.00", color = c.text3) },
                 colors = OutlinedTextFieldDefaults.colors(
@@ -590,7 +590,7 @@ fun AddAlertSheet(
             Spacer(Modifier.height(24.dp))
 
             // Create Button
-            val targetPrice = targetPriceString.toDoubleOrNull() ?: 0.0
+            val targetPrice = targetPriceString.replace(',', '.').toDoubleOrNull() ?: 0.0
             val isValid = selectedAsset != null && targetPrice > 0.0
 
             Button(

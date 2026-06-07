@@ -41,6 +41,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -84,6 +85,7 @@ fun SettingsScreen(
     val c = Obchodnik.colors
     val scrollState = rememberScrollState()
     var includeApiKeysInBackup by rememberSaveable { mutableStateOf(false) }
+    var showResetDialog by remember { mutableStateOf(false) }
 
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/json"),
@@ -97,6 +99,41 @@ fun SettingsScreen(
             preview = preview,
             onConfirm = onConfirmImportData,
             onDismiss = onDismissImportPreview,
+        )
+    }
+
+    if (showResetDialog) {
+        AlertDialog(
+            onDismissRequest = { showResetDialog = false },
+            containerColor = c.surface,
+            titleContentColor = c.text,
+            textContentColor = c.text2,
+            title = {
+                Text(text = "Resetovat onboarding", fontWeight = FontWeight.Bold)
+            },
+            text = {
+                Text(text = "Opravdu chcete resetovat průvodce? Při příštím spuštění aplikace se zobrazí úvodní obrazovky.")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onResetOnboarding()
+                        showResetDialog = false
+                    },
+                    shape = RoundedCornerShape(Obchodnik.radii.radius),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = c.accent,
+                        contentColor = c.onAccent,
+                    ),
+                ) {
+                    Text(text = "Resetovat", fontWeight = FontWeight.SemiBold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetDialog = false }) {
+                    Text(text = "Zrušit", color = c.text2, fontWeight = FontWeight.SemiBold)
+                }
+            }
         )
     }
 
@@ -427,7 +464,7 @@ fun SettingsScreen(
                                 subtitle = "Znovu spustí úvodního průvodce při příštím zapnutí"
                             ) {
                                 Button(
-                                    onClick = onResetOnboarding,
+                                    onClick = { showResetDialog = true },
                                     shape = RoundedCornerShape(Obchodnik.radii.radius),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = c.surface2,

@@ -303,6 +303,21 @@ private fun WatchlistControls(
                     modifier = Modifier.size(18.dp),
                 )
             },
+            trailingIcon = {
+                if (query.isNotEmpty()) {
+                    IconButton(
+                        onClick = { onQueryChanged("") },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Close,
+                            contentDescription = "Vymazat filtr",
+                            tint = c.text3,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            },
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedTextColor = c.text,

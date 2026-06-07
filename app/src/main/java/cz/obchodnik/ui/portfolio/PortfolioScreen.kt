@@ -83,6 +83,7 @@ fun PortfolioScreen(
     val c = Obchodnik.colors
     var showSheet by remember { mutableStateOf(false) }
     var editingItem by remember { mutableStateOf<PortfolioItem?>(null) }
+    var holdingToDelete by remember { mutableStateOf<Holding?>(null) }
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("text/csv"),
     ) { uri -> uri?.let(onExportCsv) }
@@ -147,7 +148,7 @@ fun PortfolioScreen(
                             editingItem = item
                             showSheet = true
                         },
-                        onDelete = { onDeletePosition(item.holding) }
+                        onDelete = { holdingToDelete = item.holding }
                     )
                 }
             }
@@ -169,6 +170,43 @@ fun PortfolioScreen(
                 }
                 showSheet = false
                 editingItem = null
+            }
+        )
+    }
+
+    holdingToDelete?.let { holding ->
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { holdingToDelete = null },
+            containerColor = c.surface,
+            titleContentColor = c.text,
+            textContentColor = c.text2,
+            title = {
+                Text(text = "Smazat pozici", fontWeight = FontWeight.Bold)
+            },
+            text = {
+                Text(text = "Opravdu chcete smazat tuto pozici z portfolia?")
+            },
+            confirmButton = {
+                androidx.compose.material3.Button(
+                    onClick = {
+                        onDeletePosition(holding)
+                        holdingToDelete = null
+                    },
+                    shape = RoundedCornerShape(Obchodnik.radii.chip),
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                        containerColor = c.accent,
+                        contentColor = c.onAccent,
+                    ),
+                ) {
+                    Text(text = "Smazat", fontWeight = FontWeight.SemiBold)
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = { holdingToDelete = null }
+                ) {
+                    Text(text = "Zrušit", color = c.text2, fontWeight = FontWeight.SemiBold)
+                }
             }
         )
     }
@@ -715,7 +753,7 @@ private fun PositionSheet(
                     OutlinedTextField(
                         value = qtyString,
                         onValueChange = { qtyString = it },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         singleLine = true,
                         placeholder = { Text("0.0", color = c.text3) },
                         colors = OutlinedTextFieldDefaults.colors(
@@ -739,7 +777,7 @@ private fun PositionSheet(
                     OutlinedTextField(
                         value = priceString,
                         onValueChange = { priceString = it },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         singleLine = true,
                         placeholder = { Text("0.00", color = c.text3) },
                         colors = OutlinedTextFieldDefaults.colors(
@@ -756,8 +794,8 @@ private fun PositionSheet(
             Spacer(Modifier.height(24.dp))
 
             // Confirm Button
-            val qty = qtyString.toDoubleOrNull() ?: 0.0
-            val price = priceString.toDoubleOrNull() ?: 0.0
+            val qty = qtyString.replace(',', '.').toDoubleOrNull() ?: 0.0
+            val price = priceString.replace(',', '.').toDoubleOrNull() ?: 0.0
             val isValid = selectedAsset != null && qty > 0.0 && price > 0.0
 
             Button(
