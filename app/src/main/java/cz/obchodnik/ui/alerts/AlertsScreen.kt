@@ -340,7 +340,7 @@ private fun EmptyAlerts(onAddClick: () -> Unit) {
             fontWeight = FontWeight.SemiBold,
             fontSize = 14.sp,
             modifier = Modifier
-                .background(c.accent, RoundedCornerShape(Obchodnik.radii.chip))
+                .background(c.accent, RoundedCornerShape(Obchodnik.radii.radius))
                 .clickable { onAddClick() }
                 .padding(horizontal = 20.dp, vertical = 10.dp)
         )

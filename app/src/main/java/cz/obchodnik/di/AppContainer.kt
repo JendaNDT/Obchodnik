@@ -20,6 +20,8 @@ import cz.obchodnik.data.source.CommodityDataSource
 import cz.obchodnik.data.source.CryptoDataSource
 import cz.obchodnik.data.source.CurrencyRateProvider
 import cz.obchodnik.data.source.DataSourceRouter
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -61,10 +63,28 @@ class AppContainer(
             )
             .build()
 
+    private val coinGeckoHttpClient: OkHttpClient =
+        okHttpClient.newBuilder()
+            .addInterceptor { chain ->
+                val request = chain.request()
+                val key = runBlocking {
+                    settingsRepository.settings.first().coingeckoKey
+                }
+                if (key.isNotBlank()) {
+                    val newRequest = request.newBuilder()
+                        .header("x-cg-demo-api-key", key)
+                        .build()
+                    chain.proceed(newRequest)
+                } else {
+                    chain.proceed(request)
+                }
+            }
+            .build()
+
     private val coinGeckoRetrofit: Retrofit =
         Retrofit.Builder()
             .baseUrl("https://api.coingecko.com/api/v3/")
-            .client(okHttpClient)
+            .client(coinGeckoHttpClient)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
 

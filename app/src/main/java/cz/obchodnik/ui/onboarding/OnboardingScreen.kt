@@ -314,7 +314,7 @@ private fun NotificationsStep(onRequestPermission: () -> Unit) {
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
-                    .background(c.accent, RoundedCornerShape(Obchodnik.radii.chip))
+                    .background(c.accent, RoundedCornerShape(Obchodnik.radii.radius))
                     .clickable { onRequestPermission() }
                     .padding(horizontal = 24.dp, vertical = 12.dp)
             )

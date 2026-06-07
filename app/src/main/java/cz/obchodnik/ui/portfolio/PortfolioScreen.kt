@@ -192,7 +192,7 @@ fun PortfolioScreen(
                         onDeletePosition(holding)
                         holdingToDelete = null
                     },
-                    shape = RoundedCornerShape(Obchodnik.radii.chip),
+                    shape = RoundedCornerShape(Obchodnik.radii.radius),
                     colors = androidx.compose.material3.ButtonDefaults.buttonColors(
                         containerColor = c.accent,
                         contentColor = c.onAccent,
@@ -635,7 +635,7 @@ private fun EmptyPortfolio(onAddClick: () -> Unit) {
             fontWeight = FontWeight.SemiBold,
             fontSize = 14.sp,
             modifier = Modifier
-                .background(c.accent, RoundedCornerShape(Obchodnik.radii.chip))
+                .background(c.accent, RoundedCornerShape(Obchodnik.radii.radius))
                 .clickable { onAddClick() }
                 .padding(horizontal = 20.dp, vertical = 10.dp)
         )

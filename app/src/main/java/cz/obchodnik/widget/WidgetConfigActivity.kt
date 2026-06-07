@@ -350,7 +350,7 @@ private fun WidgetConfigScreen(
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(48.dp),
-                shape = RoundedCornerShape(Obchodnik.radii.chip),
+                shape = RoundedCornerShape(Obchodnik.radii.radius),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = c.accent,
                     contentColor = c.onAccent
