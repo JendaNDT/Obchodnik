@@ -30,6 +30,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
@@ -44,6 +48,7 @@ import cz.obchodnik.domain.model.ChartRange
 import cz.obchodnik.ui.components.AssetIcon
 import cz.obchodnik.ui.components.CandlePriceChart
 import cz.obchodnik.ui.components.Change
+import cz.obchodnik.ui.components.DataApproximationDialog
 import cz.obchodnik.ui.components.LinePriceChart
 import cz.obchodnik.ui.components.ObchodnikCard
 import cz.obchodnik.ui.theme.JetBrainsMono
@@ -59,6 +64,11 @@ fun DetailScreen(
     modifier: Modifier = Modifier,
 ) {
     val c = Obchodnik.colors
+    var dataInfoAssetType by remember { mutableStateOf<AssetType?>(null) }
+    dataInfoAssetType?.let { assetType ->
+        DataApproximationDialog(assetType = assetType, onDismiss = { dataInfoAssetType = null })
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -143,7 +153,11 @@ fun DetailScreen(
                 StatsGrid(state = state, modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
             }
             item {
-                DataInfoFooter(state = state, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+                DataInfoFooter(
+                    state = state,
+                    onOpenDataInfo = { dataInfoAssetType = it },
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                )
             }
             item {
                 ActionButtons(
@@ -273,7 +287,11 @@ private fun RangeTabs(
 }
 
 @Composable
-private fun DataInfoFooter(state: DetailUiState, modifier: Modifier = Modifier) {
+private fun DataInfoFooter(
+    state: DetailUiState,
+    onOpenDataInfo: (AssetType) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val c = Obchodnik.colors
     val asset = state.asset
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -294,14 +312,16 @@ private fun DataInfoFooter(state: DetailUiState, modifier: Modifier = Modifier) 
         }
         when (asset?.type) {
             AssetType.INDEX -> Text(
-                text = "Hodnota přibližně přes ETF zástupce (SPY/QQQ/DIA).",
-                color = c.text3,
+                text = "Hodnota přibližně přes ETF zástupce. Více o datech",
+                color = c.text2,
                 fontSize = 11.sp,
+                modifier = Modifier.clickable { onOpenDataInfo(AssetType.INDEX) },
             )
             AssetType.COMMODITY -> Text(
-                text = "Komoditní data se aktualizují přibližně jednou denně.",
-                color = c.text3,
+                text = "Komoditní data se aktualizují přibližně jednou denně. Více o datech",
+                color = c.text2,
                 fontSize = 11.sp,
+                modifier = Modifier.clickable { onOpenDataInfo(AssetType.COMMODITY) },
             )
             else -> {}
         }

@@ -125,6 +125,7 @@ private fun WidgetConfigScreen(
     var watchlistAssets by remember { mutableStateOf<List<AssetEntity>>(emptyList()) }
     val selectedAssetIds = remember { mutableStateListOf<String>() }
     var showFng by remember { mutableStateOf(true) }
+    var mode by remember { mutableStateOf(WidgetMode.BALANCED) }
     var isLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
@@ -142,6 +143,7 @@ private fun WidgetConfigScreen(
             watchlistAssets.firstOrNull()?.let { selectedAssetIds.add(it.id) }
         }
         showFng = prefs[ObchodnikWidgetKeys.showFng] ?: true
+        mode = WidgetMode.fromKey(prefs[ObchodnikWidgetKeys.mode])
         isLoading = false
     }
 
@@ -256,6 +258,44 @@ private fun WidgetConfigScreen(
             }
 
             ObchodnikCard(padding = androidx.compose.foundation.layout.PaddingValues(12.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        text = "Režim widgetu",
+                        color = c.text,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        WidgetMode.entries.forEach { option ->
+                            val active = option == mode
+                            Text(
+                                text = option.label,
+                                color = if (active) c.onAccent else c.text2,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 12.sp,
+                                modifier = Modifier
+                                    .background(
+                                        if (active) c.accent else c.surface2,
+                                        RoundedCornerShape(Obchodnik.radii.chip),
+                                    )
+                                    .clickable { mode = option }
+                                    .padding(horizontal = 11.dp, vertical = 7.dp),
+                            )
+                        }
+                    }
+                    Text(
+                        text = when (mode) {
+                            WidgetMode.BALANCED -> "Cena, změna, mini grafy a volitelný Fear & Greed."
+                            WidgetMode.PRICES -> "Více prostoru pro ceny bez mini grafů."
+                            WidgetMode.CHARTS -> "Méně řádků, větší důraz na mini grafy."
+                        },
+                        color = c.text3,
+                        fontSize = 11.sp,
+                    )
+                }
+            }
+
+            ObchodnikCard(padding = androidx.compose.foundation.layout.PaddingValues(12.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -303,6 +343,7 @@ private fun WidgetConfigScreen(
                         updateAppWidgetState(context, glanceId) { prefs ->
                             prefs[ObchodnikWidgetKeys.assets] = selectedAssetIds.joinToString(",")
                             prefs[ObchodnikWidgetKeys.showFng] = showFng
+                            prefs[ObchodnikWidgetKeys.mode] = mode.key
                         }
                         ObchodnikWidget().update(context, glanceId)
                         onSaveCompleted()

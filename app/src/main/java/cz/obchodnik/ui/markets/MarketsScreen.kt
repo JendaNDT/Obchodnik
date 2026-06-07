@@ -40,6 +40,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -58,6 +59,7 @@ import cz.obchodnik.core.format.MarketFormatters
 import cz.obchodnik.domain.AssetType
 import cz.obchodnik.ui.components.AssetIcon
 import cz.obchodnik.ui.components.Change
+import cz.obchodnik.ui.components.DataApproximationDialog
 import cz.obchodnik.ui.components.ObchodnikCard
 import cz.obchodnik.ui.components.SkeletonBlock
 import cz.obchodnik.ui.components.Sparkline
@@ -78,8 +80,12 @@ fun MarketsScreen(
 ) {
     val listState = rememberLazyListState()
     var pullDistance by remember { mutableFloatStateOf(0f) }
+    var dataInfoAssetType by remember { mutableStateOf<AssetType?>(null) }
     val pullThreshold = 92.dp
     val c = Obchodnik.colors
+    dataInfoAssetType?.let { assetType ->
+        DataApproximationDialog(assetType = assetType, onDismiss = { dataInfoAssetType = null })
+    }
 
     Column(
         modifier = modifier
@@ -172,6 +178,7 @@ fun MarketsScreen(
                         canMoveDown = index < state.assets.lastIndex,
                         onMoveUp = { onMoveAsset(row.asset.id, -1) },
                         onMoveDown = { onMoveAsset(row.asset.id, 1) },
+                        onOpenDataInfo = { dataInfoAssetType = row.asset.type },
                         onClick = { onOpenAsset(row.asset.id) },
                     )
                 }
@@ -330,6 +337,7 @@ private fun MarketAssetRow(
     canMoveDown: Boolean,
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit,
+    onOpenDataInfo: () -> Unit,
     onClick: () -> Unit,
 ) {
     val c = Obchodnik.colors
@@ -360,9 +368,14 @@ private fun MarketAssetRow(
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 12.sp,
             )
-            if (row.asset.type == AssetType.INDEX) {
+            val dataBadge = when (row.asset.type) {
+                AssetType.INDEX -> "≈ ETF"
+                AssetType.COMMODITY -> "denní data"
+                else -> null
+            }
+            if (dataBadge != null) {
                 Text(
-                    text = "≈ ETF",
+                    text = dataBadge,
                     color = c.text3,
                     fontFamily = JetBrainsMono,
                     fontWeight = FontWeight.SemiBold,
@@ -371,6 +384,7 @@ private fun MarketAssetRow(
                         .padding(top = 3.dp)
                         .background(c.surface2, RoundedCornerShape(Obchodnik.radii.chip))
                         .border(BorderStroke(1.dp, c.border), RoundedCornerShape(Obchodnik.radii.chip))
+                        .clickable { onOpenDataInfo() }
                         .padding(horizontal = 5.dp, vertical = 1.dp),
                 )
             }

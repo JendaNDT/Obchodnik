@@ -67,6 +67,7 @@ import java.util.Locale
 object ObchodnikWidgetKeys {
     val assets = stringPreferencesKey("assets")
     val showFng = booleanPreferencesKey("show_fng")
+    val mode = stringPreferencesKey("mode")
 }
 
 class ObchodnikWidget : GlanceAppWidget() {
@@ -92,6 +93,7 @@ class ObchodnikWidget : GlanceAppWidget() {
         val prefs = getAppWidgetState(context, PreferencesGlanceStateDefinition, id)
         val configAssetsStr = prefs[ObchodnikWidgetKeys.assets] ?: "cg:bitcoin"
         val showFng = prefs[ObchodnikWidgetKeys.showFng] ?: true
+        val mode = WidgetMode.fromKey(prefs[ObchodnikWidgetKeys.mode])
 
         // Read settings from DataStore (suspend)
         val settings = runCatching { settingsStore.settings.first() }.getOrNull()
@@ -158,15 +160,18 @@ class ObchodnikWidget : GlanceAppWidget() {
                             assets = assets.take(3),
                             quotes = quotes,
                             currency = currency,
-                            showFng = showFng,
+                            showFng = showFng && mode.showFng,
+                            mode = mode,
                             accentColor = accentColor
                         )
                     }
                     WidgetLayoutType.LARGE -> {
                         LargeWidgetLayout(
-                            assets = assets.take(5),
+                            assets = assets.take(if (mode == WidgetMode.CHARTS) 3 else 5),
                             quotes = quotes,
                             currency = currency,
+                            showFng = showFng && mode.showFng,
+                            mode = mode,
                             accentColor = accentColor
                         )
                     }
@@ -178,6 +183,22 @@ class ObchodnikWidget : GlanceAppWidget() {
 
 private enum class WidgetLayoutType {
     SMALL, MEDIUM, LARGE
+}
+
+enum class WidgetMode(
+    val key: String,
+    val label: String,
+    val showSpark: Boolean,
+    val showFng: Boolean,
+) {
+    BALANCED("balanced", "Vyvážený", showSpark = true, showFng = true),
+    PRICES("prices", "Ceny", showSpark = false, showFng = false),
+    CHARTS("charts", "Grafy", showSpark = true, showFng = false);
+
+    companion object {
+        fun fromKey(key: String?): WidgetMode =
+            entries.firstOrNull { it.key == key } ?: BALANCED
+    }
 }
 
 private fun openAssetAction(context: Context, assetId: String) =
@@ -292,6 +313,7 @@ private fun MediumWidgetLayout(
     quotes: Map<String, Quote>,
     currency: String,
     showFng: Boolean,
+    mode: WidgetMode,
     accentColor: Color
 ) {
     val context = LocalContext.current
@@ -320,14 +342,15 @@ private fun MediumWidgetLayout(
             modifier = GlanceModifier.fillMaxWidth().fillMaxHeight(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            assets.forEachIndexed { index, asset ->
+            assets.take(if (mode == WidgetMode.CHARTS) 2 else 3).forEachIndexed { index, asset ->
                 if (index > 0) Spacer(modifier = GlanceModifier.height(6.dp))
                 WidgetAssetRow(
                     asset = asset,
                     quote = quotes[asset.id],
                     currency = currency,
                     density = density,
-                    showSpark = true
+                    showSpark = mode.showSpark,
+                    chartWidthDp = if (mode == WidgetMode.CHARTS) 72 else 48,
                 )
             }
         }
@@ -339,6 +362,8 @@ private fun LargeWidgetLayout(
     assets: List<AssetEntity>,
     quotes: Map<String, Quote>,
     currency: String,
+    showFng: Boolean,
+    mode: WidgetMode,
     accentColor: Color
 ) {
     val context = LocalContext.current
@@ -347,24 +372,26 @@ private fun LargeWidgetLayout(
 
     Column(modifier = GlanceModifier.fillMaxSize()) {
         WidgetHeader(accentColor, rightContent = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = "Fear & Greed",
-                        style = TextStyle(color = ColorProvider(Color.Gray), fontSize = 8.sp)
-                    )
-                    Text(
-                        text = "Chamtivost",
-                        style = TextStyle(color = ColorProvider(Color(0xFF84CC16)), fontSize = 9.sp, fontWeight = FontWeight.Bold)
+            if (showFng) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = "Fear & Greed",
+                            style = TextStyle(color = ColorProvider(Color.Gray), fontSize = 8.sp)
+                        )
+                        Text(
+                            text = "Chamtivost",
+                            style = TextStyle(color = ColorProvider(Color(0xFF84CC16)), fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                        )
+                    }
+                    Spacer(modifier = GlanceModifier.width(6.dp))
+                    val fngBitmap = drawFngMini(72, 28, density)
+                    Image(
+                        provider = ImageProvider(fngBitmap),
+                        contentDescription = null,
+                        modifier = GlanceModifier.size(28.dp)
                     )
                 }
-                Spacer(modifier = GlanceModifier.width(6.dp))
-                val fngBitmap = drawFngMini(72, 28, density)
-                Image(
-                    provider = ImageProvider(fngBitmap),
-                    contentDescription = null,
-                    modifier = GlanceModifier.size(28.dp)
-                )
             }
         })
         Spacer(modifier = GlanceModifier.height(6.dp))
@@ -378,7 +405,8 @@ private fun LargeWidgetLayout(
                     quote = quotes[asset.id],
                     currency = currency,
                     density = density,
-                    showSpark = true
+                    showSpark = mode.showSpark,
+                    chartWidthDp = if (mode == WidgetMode.CHARTS) 76 else 48,
                 )
             }
         }
@@ -416,7 +444,8 @@ private fun WidgetAssetRow(
     quote: Quote?,
     currency: String,
     density: Float,
-    showSpark: Boolean
+    showSpark: Boolean,
+    chartWidthDp: Int = 48,
 ) {
     val change = quote?.change24hPct ?: 0.0
     val up = change >= 0.0
@@ -453,7 +482,7 @@ private fun WidgetAssetRow(
         if (showSpark) {
             val sparkline = quote?.sparkline7d.orEmpty()
             if (sparkline.size >= 2) {
-                val bitmap = drawSparkline(sparkline, up, 48, 18, density)
+                val bitmap = drawSparkline(sparkline, up, chartWidthDp, 18, density)
                 Image(
                     provider = ImageProvider(bitmap),
                     contentDescription = null,
