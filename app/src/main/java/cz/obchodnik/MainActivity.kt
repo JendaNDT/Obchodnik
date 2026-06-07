@@ -303,7 +303,9 @@ private fun ObchodnikAppContent(
                     onNotificationsEnabledChanged = viewModel::setNotificationsEnabled,
                     onResetOnboarding = viewModel::resetOnboarding,
                     onExportData = viewModel::exportData,
-                    onImportData = viewModel::importData,
+                    onPreviewImportData = viewModel::previewImportData,
+                    onConfirmImportData = viewModel::confirmImportData,
+                    onDismissImportPreview = viewModel::dismissImportPreview,
                     onBack = { navController.popBackStack() },
                 )
             }

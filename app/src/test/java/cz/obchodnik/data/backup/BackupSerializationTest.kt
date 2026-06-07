@@ -1,6 +1,7 @@
 package cz.obchodnik.data.backup
 
 import cz.obchodnik.domain.AssetType
+import cz.obchodnik.data.prefs.AppSettings
 import cz.obchodnik.domain.model.Asset
 import cz.obchodnik.domain.model.DataProvider
 import kotlinx.serialization.json.Json
@@ -35,6 +36,63 @@ class BackupSerializationTest {
         val decoded = json.decodeFromString(BackupData.serializer(), encoded)
 
         assertEquals(original, decoded)
+    }
+
+    @Test
+    fun `settings backup omits api keys by default`() {
+        val settings = AppSettings(
+            coingeckoKey = "cg_secret",
+            alphaVantageKey = "av_secret",
+        )
+
+        val encoded = json.encodeToString(BackupSettings.serializer(), settings.toBackup())
+
+        assertNull(settings.toBackup().coingeckoKey)
+        assertNull(settings.toBackup().alphaVantageKey)
+        assertTrue(!encoded.contains("cg_secret"))
+        assertTrue(!encoded.contains("av_secret"))
+    }
+
+    @Test
+    fun `settings backup can include api keys explicitly`() {
+        val settings = AppSettings(
+            coingeckoKey = "cg_secret",
+            alphaVantageKey = "av_secret",
+        )
+
+        val backup = settings.toBackup(includeApiKeys = true)
+
+        assertEquals("cg_secret", backup.coingeckoKey)
+        assertEquals("av_secret", backup.alphaVantageKey)
+    }
+
+    @Test
+    fun `import preview counts importable assets and api keys`() {
+        val data = BackupData(
+            schemaVersion = BACKUP_SCHEMA_VERSION,
+            exportedAt = 1_700_000_000_000L,
+            appVersion = "1.0.0",
+            watchlist = listOf(
+                BackupAsset("cg:bitcoin", "BTC", "Bitcoin", "CRYPTO", "COINGECKO", "bitcoin"),
+                BackupAsset("broken", "BAD", "Broken", "UNKNOWN", "COINGECKO", "broken"),
+            ),
+            holdings = listOf(BackupHolding("cg:bitcoin", 1.0, 10_000.0)),
+            alerts = listOf(BackupAlert("cg:bitcoin", false, 9_000.0, true)),
+            settings = BackupSettings(
+                coingeckoKey = null,
+                alphaVantageKey = "av_secret",
+            ),
+        )
+
+        val preview = data.toImportPreview()
+
+        assertEquals(2, preview.assets)
+        assertEquals(1, preview.importableAssets)
+        assertEquals(1, preview.holdings)
+        assertEquals(1, preview.alerts)
+        assertEquals(false, preview.includesCoinGeckoKey)
+        assertTrue(preview.includesAlphaVantageKey)
+        assertTrue(preview.includesApiKeys)
     }
 
     @Test

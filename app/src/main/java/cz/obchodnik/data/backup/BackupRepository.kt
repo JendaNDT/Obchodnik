@@ -15,6 +15,34 @@ data class ImportSummary(
     val alerts: Int,
 )
 
+data class BackupImportPreview(
+    val schemaVersion: Int,
+    val exportedAt: Long,
+    val appVersion: String,
+    val assets: Int,
+    val importableAssets: Int,
+    val holdings: Int,
+    val alerts: Int,
+    val includesCoinGeckoKey: Boolean,
+    val includesAlphaVantageKey: Boolean,
+) {
+    val includesApiKeys: Boolean
+        get() = includesCoinGeckoKey || includesAlphaVantageKey
+}
+
+fun BackupData.toImportPreview(): BackupImportPreview =
+    BackupImportPreview(
+        schemaVersion = schemaVersion,
+        exportedAt = exportedAt,
+        appVersion = appVersion,
+        assets = watchlist.size,
+        importableAssets = watchlist.count { it.toAssetOrNull() != null },
+        holdings = holdings.size,
+        alerts = alerts.size,
+        includesCoinGeckoKey = !settings.coingeckoKey.isNullOrBlank(),
+        includesAlphaVantageKey = !settings.alphaVantageKey.isNullOrBlank(),
+    )
+
 /**
  * Exports user data (watchlist, holdings, alerts, user settings) to a JSON
  * string and restores it. Cached quotes/history and runtime counters (Alpha
@@ -31,7 +59,7 @@ class BackupRepository(
     private val appVersion: String,
     private val now: () -> Long = { System.currentTimeMillis() },
 ) {
-    suspend fun buildBackup(): BackupData {
+    suspend fun buildBackup(includeApiKeys: Boolean = false): BackupData {
         val settings = settingsRepository.settings.first()
         return BackupData(
             schemaVersion = BACKUP_SCHEMA_VERSION,
@@ -44,7 +72,7 @@ class BackupRepository(
             alerts = alertRepository.observeAlerts().first().map {
                 BackupAlert(assetId = it.assetId, above = it.above, target = it.target, enabled = it.enabled)
             },
-            settings = settings.toBackup(),
+            settings = settings.toBackup(includeApiKeys),
         )
     }
 
@@ -54,7 +82,11 @@ class BackupRepository(
     fun decode(text: String): BackupData =
         json.decodeFromString(BackupData.serializer(), text)
 
-    suspend fun exportToJson(): String = encode(buildBackup())
+    suspend fun exportToJson(includeApiKeys: Boolean = false): String = encode(buildBackup(includeApiKeys))
+
+    fun previewImport(text: String): BackupImportPreview = preview(decode(text))
+
+    fun preview(data: BackupData): BackupImportPreview = data.toImportPreview()
 
     suspend fun importFromJson(text: String): ImportSummary = import(decode(text))
 
@@ -98,8 +130,8 @@ class BackupRepository(
         settingsRepository.setDefaultChart(settings.defaultChart)
         settingsRepository.setDensity(settings.density)
         settingsRepository.setShowFngOnWidget(settings.showFngOnWidget)
-        settingsRepository.setCoinGeckoKey(settings.coingeckoKey)
-        settingsRepository.setAlphaVantageKey(settings.alphaVantageKey)
+        settings.coingeckoKey?.let { settingsRepository.setCoinGeckoKey(it) }
+        settings.alphaVantageKey?.let { settingsRepository.setAlphaVantageKey(it) }
         settingsRepository.setNotificationsEnabled(settings.notificationsEnabled)
     }
 }

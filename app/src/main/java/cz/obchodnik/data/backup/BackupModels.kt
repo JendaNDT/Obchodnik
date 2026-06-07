@@ -56,8 +56,8 @@ data class BackupSettings(
     val defaultChart: String = "line",
     val density: String = "normal",
     val showFngOnWidget: Boolean = true,
-    val coingeckoKey: String = "",
-    val alphaVantageKey: String = "",
+    val coingeckoKey: String? = null,
+    val alphaVantageKey: String? = null,
     val notificationsEnabled: Boolean = false,
 )
 
@@ -89,7 +89,7 @@ fun BackupAsset.toAssetOrNull(): Asset? {
     )
 }
 
-fun AppSettings.toBackup(): BackupSettings =
+fun AppSettings.toBackup(includeApiKeys: Boolean = false): BackupSettings =
     BackupSettings(
         theme = theme,
         accent = accent,
@@ -98,7 +98,7 @@ fun AppSettings.toBackup(): BackupSettings =
         defaultChart = defaultChart,
         density = density,
         showFngOnWidget = showFngOnWidget,
-        coingeckoKey = coingeckoKey,
-        alphaVantageKey = alphaVantageKey,
+        coingeckoKey = coingeckoKey.takeIf { includeApiKeys },
+        alphaVantageKey = alphaVantageKey.takeIf { includeApiKeys },
         notificationsEnabled = notificationsEnabled,
     )

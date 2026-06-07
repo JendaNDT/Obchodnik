@@ -27,6 +27,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -36,7 +37,12 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,11 +50,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cz.obchodnik.data.backup.BackupImportPreview
 import cz.obchodnik.ui.components.ObchodnikCard
 import cz.obchodnik.ui.theme.AccentChoice
 import cz.obchodnik.ui.theme.JetBrainsMono
 import cz.obchodnik.ui.theme.Obchodnik
 import cz.obchodnik.ui.theme.ThemeChoice
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun SettingsScreen(
@@ -64,20 +74,31 @@ fun SettingsScreen(
     onAlphaVantageKeyChanged: (String) -> Unit,
     onNotificationsEnabledChanged: (Boolean) -> Unit,
     onResetOnboarding: () -> Unit,
-    onExportData: (Uri) -> Unit,
-    onImportData: (Uri) -> Unit,
+    onExportData: (Uri, Boolean) -> Unit,
+    onPreviewImportData: (Uri) -> Unit,
+    onConfirmImportData: () -> Unit,
+    onDismissImportPreview: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val c = Obchodnik.colors
     val scrollState = rememberScrollState()
+    var includeApiKeysInBackup by rememberSaveable { mutableStateOf(false) }
 
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/json"),
-    ) { uri -> uri?.let(onExportData) }
+    ) { uri -> uri?.let { onExportData(it, includeApiKeysInBackup) } }
     val importLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument(),
-    ) { uri -> uri?.let(onImportData) }
+    ) { uri -> uri?.let(onPreviewImportData) }
+
+    state.importPreview?.let { preview ->
+        ImportPreviewDialog(
+            preview = preview,
+            onConfirm = onConfirmImportData,
+            onDismiss = onDismissImportPreview,
+        )
+    }
 
     Column(
         modifier = modifier
@@ -325,6 +346,15 @@ fun SettingsScreen(
                                 color = c.text3,
                                 fontSize = 11.sp,
                             )
+                            SettingsRow(
+                                title = "Přidat API klíče do exportu",
+                                subtitle = "Vypnuto znamená bezpečnější zálohu bez citlivých údajů"
+                            ) {
+                                ObchodnikSwitch(
+                                    checked = includeApiKeysInBackup,
+                                    onCheckedChange = { includeApiKeysInBackup = it },
+                                )
+                            }
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -417,6 +447,116 @@ fun SettingsScreen(
             }
         }
     }
+}
+
+@Composable
+private fun ImportPreviewDialog(
+    preview: BackupImportPreview,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val c = Obchodnik.colors
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = c.surface,
+        titleContentColor = c.text,
+        textContentColor = c.text2,
+        title = {
+            Text(
+                text = "Náhled importu",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(
+                    text = "Import přidá položky ze souboru k aktuálním datům.",
+                    color = c.text2,
+                    fontSize = 13.sp,
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    ImportPreviewLine("Verze schématu", preview.schemaVersion.toString())
+                    if (preview.appVersion.isNotBlank()) {
+                        ImportPreviewLine("Verze aplikace", preview.appVersion)
+                    }
+                    ImportPreviewLine("Exportováno", formatBackupTimestamp(preview.exportedAt))
+                    ImportPreviewLine(
+                        "Aktiva",
+                        if (preview.importableAssets == preview.assets) {
+                            preview.assets.toString()
+                        } else {
+                            "${preview.importableAssets} z ${preview.assets} použitelných"
+                        },
+                    )
+                    ImportPreviewLine("Pozice", preview.holdings.toString())
+                    ImportPreviewLine("Alerty", preview.alerts.toString())
+                    ImportPreviewLine(
+                        "API klíče",
+                        if (preview.includesApiKeys) "součástí zálohy" else "neobsahuje",
+                    )
+                }
+                if (preview.importableAssets < preview.assets) {
+                    Text(
+                        text = "Některá aktiva mají neznámý typ nebo zdroj a přeskočí se.",
+                        color = c.down,
+                        fontSize = 12.sp,
+                    )
+                }
+                if (preview.includesApiKeys) {
+                    Text(
+                        text = "Soubor obsahuje API klíče. Import je uloží do tohoto zařízení.",
+                        color = c.text3,
+                        fontSize = 12.sp,
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                shape = RoundedCornerShape(Obchodnik.radii.chip),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = c.accent,
+                    contentColor = c.onAccent,
+                ),
+            ) {
+                Text(text = "Importovat", fontWeight = FontWeight.SemiBold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = "Zrušit", color = c.text2, fontWeight = FontWeight.SemiBold)
+            }
+        },
+    )
+}
+
+@Composable
+private fun ImportPreviewLine(
+    label: String,
+    value: String,
+) {
+    val c = Obchodnik.colors
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(text = label, color = c.text3, fontSize = 12.sp)
+        Text(
+            text = value,
+            color = c.text,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = JetBrainsMono,
+        )
+    }
+}
+
+private fun formatBackupTimestamp(epochMillis: Long): String {
+    if (epochMillis <= 0L) return "neuvedeno"
+    return SimpleDateFormat("d. M. yyyy HH:mm", Locale("cs", "CZ")).format(Date(epochMillis))
 }
 
 @Composable

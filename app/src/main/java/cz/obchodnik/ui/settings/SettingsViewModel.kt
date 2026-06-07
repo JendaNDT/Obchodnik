@@ -7,14 +7,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import cz.obchodnik.ObchodnikApp
+import cz.obchodnik.data.backup.BackupImportPreview
 import cz.obchodnik.data.backup.BackupRepository
 import cz.obchodnik.data.prefs.SettingsRepository
 import cz.obchodnik.work.WorkScheduler
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -24,15 +26,23 @@ class SettingsViewModel(
     private val backupRepository: BackupRepository? = null,
 ) : ViewModel() {
 
-    val uiState: StateFlow<SettingsUiState> = settingsRepository.settings
-        .map { settings ->
-            SettingsUiState(settings = settings, isLoading = false)
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = SettingsUiState(isLoading = true),
+    private var pendingImportText: String? = null
+    private val importPreview = MutableStateFlow<BackupImportPreview?>(null)
+
+    val uiState: StateFlow<SettingsUiState> = combine(
+        settingsRepository.settings,
+        importPreview,
+    ) { settings, preview ->
+        SettingsUiState(
+            settings = settings,
+            isLoading = false,
+            importPreview = preview,
         )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = SettingsUiState(isLoading = true),
+    )
 
     fun setTheme(theme: String) {
         viewModelScope.launch {
@@ -107,11 +117,11 @@ class SettingsViewModel(
         }
     }
 
-    fun exportData(uri: Uri) {
+    fun exportData(uri: Uri, includeApiKeys: Boolean = false) {
         val repo = backupRepository ?: return
         viewModelScope.launch {
             val result = runCatching {
-                val jsonText = repo.exportToJson()
+                val jsonText = repo.exportToJson(includeApiKeys)
                 withContext(Dispatchers.IO) {
                     val ctx = context ?: error("Kontext nedostupný")
                     ctx.contentResolver.openOutputStream(uri)?.use { out ->
@@ -121,25 +131,53 @@ class SettingsViewModel(
             }
             toast(
                 result.fold(
-                    onSuccess = { "Záloha uložena" },
+                    onSuccess = {
+                        if (includeApiKeys) {
+                            "Záloha uložena včetně API klíčů"
+                        } else {
+                            "Záloha uložena bez API klíčů"
+                        }
+                    },
                     onFailure = { "Export selhal: ${it.message ?: "neznámá chyba"}" },
                 ),
             )
         }
     }
 
-    fun importData(uri: Uri) {
+    fun previewImportData(uri: Uri) {
         val repo = backupRepository ?: return
         viewModelScope.launch {
             val result = runCatching {
-                val text = withContext(Dispatchers.IO) {
-                    val ctx = context ?: error("Kontext nedostupný")
-                    ctx.contentResolver.openInputStream(uri)?.use { input ->
-                        input.bufferedReader(Charsets.UTF_8).readText()
-                    } ?: error("Nelze otevřít soubor pro čtení")
-                }
+                val text = readText(uri)
+                val preview = repo.previewImport(text)
+                pendingImportText = text
+                importPreview.value = preview
+            }
+            result.exceptionOrNull()?.let {
+                pendingImportText = null
+                importPreview.value = null
+                toast("Náhled importu selhal: ${it.message ?: "neplatný soubor"}")
+            }
+        }
+    }
+
+    fun dismissImportPreview() {
+        pendingImportText = null
+        importPreview.value = null
+    }
+
+    fun confirmImportData() {
+        val repo = backupRepository ?: return
+        val text = pendingImportText ?: run {
+            toast("Vyberte nejdřív soubor zálohy")
+            return
+        }
+        viewModelScope.launch {
+            val result = runCatching {
                 repo.importFromJson(text)
             }
+            pendingImportText = null
+            importPreview.value = null
             toast(
                 result.fold(
                     onSuccess = { "Import dokončen: ${it.assets} aktiv, ${it.holdings} pozic, ${it.alerts} alertů" },
@@ -148,6 +186,14 @@ class SettingsViewModel(
             )
         }
     }
+
+    private suspend fun readText(uri: Uri): String =
+        withContext(Dispatchers.IO) {
+            val ctx = context ?: error("Kontext nedostupný")
+            ctx.contentResolver.openInputStream(uri)?.use { input ->
+                input.bufferedReader(Charsets.UTF_8).readText()
+            } ?: error("Nelze otevřít soubor pro čtení")
+        }
 
     private fun toast(message: String) {
         context?.let { Toast.makeText(it, message, Toast.LENGTH_LONG).show() }
