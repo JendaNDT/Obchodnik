@@ -67,7 +67,9 @@ class AlertsViewModel(
                 above = above,
                 target = target,
                 enabled = true,
-                triggeredAt = null
+                triggeredAt = null,
+                triggeredPrice = null,
+                triggeredCurrency = null,
             )
             alertRepository.save(alert)
         }
@@ -75,8 +77,22 @@ class AlertsViewModel(
 
     fun toggleAlertEnabled(alert: PriceAlert, enabled: Boolean) {
         viewModelScope.launch {
-            alertRepository.save(alert.copy(enabled = enabled))
+            val updated = if (enabled) {
+                alert.copy(
+                    enabled = true,
+                    triggeredAt = null,
+                    triggeredPrice = null,
+                    triggeredCurrency = null,
+                )
+            } else {
+                alert.copy(enabled = false)
+            }
+            alertRepository.save(updated)
         }
+    }
+
+    fun reactivateAlert(alert: PriceAlert) {
+        toggleAlertEnabled(alert, enabled = true)
     }
 
     fun deleteAlert(alert: PriceAlert) {

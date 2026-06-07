@@ -68,11 +68,23 @@ class DetailViewModel(
 
         val watched = watchlistRepository.watchlist().any { it.id == asset.id }
         _uiState.update {
-            it.copy(asset = asset, currency = currency, inWatchlist = watched, isLoading = true, errorMessage = null)
+            it.copy(
+                asset = asset,
+                currency = currency,
+                inWatchlist = watched,
+                isLoading = true,
+                errorMessage = null,
+                noticeMessage = null,
+            )
         }
-        marketRepository.refreshQuotes(listOf(asset), currency, force = force)
+        val quoteResult = marketRepository.refreshQuotes(listOf(asset), currency, force = force)
         val quote = marketRepository.cachedQuote(asset.id, currency)
-        _uiState.update { it.copy(quote = quote) }
+        _uiState.update {
+            it.copy(
+                quote = quote,
+                noticeMessage = (quoteResult as? Result.Success)?.notice,
+            )
+        }
         refreshChart(force)
     }
 
@@ -90,10 +102,22 @@ class DetailViewModel(
                 is Result.Success<*> -> {
                     if (state.chartMode == ChartMode.LINE) {
                         @Suppress("UNCHECKED_CAST")
-                        _uiState.update { it.copy(linePoints = result.data as List<cz.obchodnik.domain.model.PricePoint>, isLoading = false) }
+                        _uiState.update {
+                            it.copy(
+                                linePoints = result.data as List<cz.obchodnik.domain.model.PricePoint>,
+                                isLoading = false,
+                                noticeMessage = result.notice ?: it.noticeMessage,
+                            )
+                        }
                     } else {
                         @Suppress("UNCHECKED_CAST")
-                        _uiState.update { it.copy(candles = result.data as List<cz.obchodnik.domain.model.Candle>, isLoading = false) }
+                        _uiState.update {
+                            it.copy(
+                                candles = result.data as List<cz.obchodnik.domain.model.Candle>,
+                                isLoading = false,
+                                noticeMessage = result.notice ?: it.noticeMessage,
+                            )
+                        }
                     }
                 }
                 is Result.Error -> _uiState.update { it.copy(isLoading = false, errorMessage = result.message) }

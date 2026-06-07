@@ -26,6 +26,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.NotificationsNone
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
@@ -73,6 +74,7 @@ fun AlertsScreen(
     state: AlertsUiState,
     onAddAlert: (String, Boolean, Double) -> Unit,
     onToggleAlert: (PriceAlert, Boolean) -> Unit,
+    onReactivateAlert: (PriceAlert) -> Unit,
     onDeleteAlert: (PriceAlert) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -106,6 +108,7 @@ fun AlertsScreen(
                         item = item,
                         currency = state.currency,
                         onToggle = { enabled -> onToggleAlert(item.alert, enabled) },
+                        onReactivate = { onReactivateAlert(item.alert) },
                         onDelete = { onDeleteAlert(item.alert) }
                     )
                 }
@@ -154,6 +157,7 @@ private fun AlertRow(
     item: AlertItem,
     currency: String,
     onToggle: (Boolean) -> Unit,
+    onReactivate: () -> Unit,
     onDelete: () -> Unit,
 ) {
     val c = Obchodnik.colors
@@ -189,12 +193,45 @@ private fun AlertRow(
                 if (triggeredAt != null) {
                     val sdf = SimpleDateFormat("HH:mm dd.MM.", Locale.getDefault())
                     val dateStr = sdf.format(Date(triggeredAt))
+                    val triggeredPrice = item.alert.triggeredPrice?.let {
+                        MarketFormatters.price(it, item.alert.triggeredCurrency ?: currency)
+                    }
                     Text(
-                        text = "Spuštěno: $dateStr",
+                        text = if (triggeredPrice != null) {
+                            "Spuštěno: $dateStr · cena $triggeredPrice"
+                        } else {
+                            "Spuštěno: $dateStr"
+                        },
                         color = c.down,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium
                     )
+                    if (!item.alert.enabled) {
+                        Spacer(Modifier.height(6.dp))
+                        Row(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(Obchodnik.radii.chip))
+                                .background(c.surface2)
+                                .border(1.dp, c.border, RoundedCornerShape(Obchodnik.radii.chip))
+                                .clickable { onReactivate() }
+                                .padding(horizontal = 9.dp, vertical = 5.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Refresh,
+                                contentDescription = null,
+                                tint = c.text2,
+                                modifier = Modifier.size(14.dp),
+                            )
+                            Spacer(Modifier.width(5.dp))
+                            Text(
+                                text = "Znovu aktivovat",
+                                color = c.text2,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        }
+                    }
                 } else if (item.alert.enabled) {
                     Text(
                         text = "Aktivní",

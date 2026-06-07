@@ -7,4 +7,6 @@ data class PriceAlert(
     val target: Double,
     val enabled: Boolean,
     val triggeredAt: Long?,
+    val triggeredPrice: Double? = null,
+    val triggeredCurrency: String? = null,
 )

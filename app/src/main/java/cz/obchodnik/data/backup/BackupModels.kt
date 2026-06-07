@@ -45,6 +45,9 @@ data class BackupAlert(
     val above: Boolean,
     val target: Double,
     val enabled: Boolean,
+    val triggeredAt: Long? = null,
+    val triggeredPrice: Double? = null,
+    val triggeredCurrency: String? = null,
 )
 
 @Serializable

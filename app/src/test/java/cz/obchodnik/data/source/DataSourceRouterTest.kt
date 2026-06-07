@@ -43,6 +43,24 @@ class DataSourceRouterTest {
     }
 
     @Test
+    fun `quotes returns partial success notice when one source fails`() = runTest {
+        val cryptoAsset = Asset("cg:btc", "BTC", "Bitcoin", AssetType.CRYPTO, DataProvider.COINGECKO, "btc", null, null)
+        val avAsset = Asset("av:c:WTI", "WTI", "Crude WTI", AssetType.COMMODITY, DataProvider.ALPHAVANTAGE, "WTI", null, null)
+        val cryptoQuote = Quote("cg:btc", 50000.0, null, null, null, null, null, null, null, emptyList(), "usd", 0L)
+
+        val fakeCryptoSource = FakeDataSource(quotesResult = Result.Success(listOf(cryptoQuote)))
+        val fakeAvSource = FakeDataSource(quotesResult = Result.Error("Překročen denní limit 25 požadavků pro Alpha Vantage."))
+        val router = DataSourceRouter(fakeCryptoSource, fakeAvSource)
+
+        val result = router.quotes(listOf(cryptoAsset, avAsset), "usd")
+
+        assertTrue(result is Result.Success)
+        result as Result.Success
+        assertEquals(listOf("cg:btc"), result.data.map { it.assetId })
+        assertEquals("Překročen denní limit 25 požadavků pro Alpha Vantage.", result.notice)
+    }
+
+    @Test
     fun `history and candles route based on asset source`() = runTest {
         val cryptoAsset = Asset("cg:btc", "BTC", "Bitcoin", AssetType.CRYPTO, DataProvider.COINGECKO, "btc", null, null)
         val avAsset = Asset("av:c:WTI", "WTI", "Crude WTI", AssetType.COMMODITY, DataProvider.ALPHAVANTAGE, "WTI", null, null)

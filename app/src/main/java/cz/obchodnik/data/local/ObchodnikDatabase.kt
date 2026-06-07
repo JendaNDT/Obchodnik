@@ -3,6 +3,7 @@ package cz.obchodnik.data.local
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import cz.obchodnik.data.local.dao.AlertDao
 import cz.obchodnik.data.local.dao.AssetDao
 import cz.obchodnik.data.local.dao.HistoryDao
@@ -22,7 +23,7 @@ import cz.obchodnik.data.local.entity.QuoteEntity
         HoldingEntity::class,
         AlertEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class ObchodnikDatabase : RoomDatabase() {
@@ -39,6 +40,13 @@ abstract class ObchodnikDatabase : RoomDatabase() {
          * newly generated schemas/<version>.json. Do not use destructive
          * migration for upgrades once the app ships real user data.
          */
-        val MIGRATIONS: Array<Migration> = arrayOf()
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE alerts ADD COLUMN triggeredPrice REAL")
+                db.execSQL("ALTER TABLE alerts ADD COLUMN triggeredCurrency TEXT")
+            }
+        }
+
+        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_2_3)
     }
 }

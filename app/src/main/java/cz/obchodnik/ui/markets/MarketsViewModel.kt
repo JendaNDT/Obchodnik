@@ -28,6 +28,8 @@ class MarketsViewModel(
     private val selectedCategory = MutableStateFlow(MarketCategory.ALL)
     private val isRefreshing = MutableStateFlow(false)
     private val errorMessage = MutableStateFlow<String?>(null)
+    private val noticeMessage = MutableStateFlow<String?>(null)
+    private val refreshMessages = combine(errorMessage, noticeMessage) { error, notice -> error to notice }
 
     val uiState = combine(
         watchlistRepository.observeWatchlist(),
@@ -36,9 +38,10 @@ class MarketsViewModel(
         },
         selectedCategory,
         isRefreshing,
-        errorMessage,
-    ) { watchlist, settingsAndQuotes, category, refreshing, error ->
+        refreshMessages,
+    ) { watchlist, settingsAndQuotes, category, refreshing, messages ->
         val (settings, quotes) = settingsAndQuotes
+        val (error, notice) = messages
         val quotesByAsset = quotes.associateBy { it.assetId }
         val filtered = watchlist
             .filter { category.includes(it.type) }
@@ -50,6 +53,7 @@ class MarketsViewModel(
             isLoading = watchlist.isEmpty() && refreshing,
             isRefreshing = refreshing,
             errorMessage = error,
+            noticeMessage = notice,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -74,8 +78,14 @@ class MarketsViewModel(
             val watchlist = watchlistRepository.watchlist()
             val currency = settingsRepository.settings.first().currency
             when (val result = marketRepository.refreshQuotes(watchlist, currency, force)) {
-                is Result.Error -> errorMessage.value = result.message
-                is Result.Success -> errorMessage.value = null
+                is Result.Error -> {
+                    errorMessage.value = result.message
+                    noticeMessage.value = null
+                }
+                is Result.Success -> {
+                    errorMessage.value = null
+                    noticeMessage.value = result.notice
+                }
                 Result.Loading -> Unit
             }
             isRefreshing.value = false

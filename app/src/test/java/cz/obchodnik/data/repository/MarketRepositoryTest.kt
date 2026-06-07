@@ -86,7 +86,45 @@ class MarketRepositoryTest {
 
         assertTrue(result is Result.Success)
         assertEquals(1, source.quoteCalls)
-        assertEquals(60_000.0, (result as Result.Success).data.first().price, 0.0)
+        result as Result.Success
+        assertEquals(60_000.0, result.data.first().price, 0.0)
+        assertEquals("Čerstvá data se nepodařilo načíst. Zobrazuji poslední uložená data.", result.notice)
+    }
+
+    @Test
+    fun `partial remote success returns remote data with cached fallback and notice`() = runTest {
+        val cryptoAsset = bitcoin()
+        val avAsset = cryptoAsset.copy(
+            id = "av:c:WTI",
+            symbol = "WTI",
+            name = "Ropa WTI",
+            type = AssetType.COMMODITY,
+            source = DataProvider.ALPHAVANTAGE,
+            sourceId = "WTI",
+        )
+        val cachedAvQuote = quote(updatedAt = 1_000L, price = 70.0).copy(assetId = "av:c:WTI")
+        val freshCryptoQuote = quote(updatedAt = 500_000L, price = 62_000.0)
+        val quoteStore = FakeQuoteStore(listOf(cachedAvQuote.toEntity(json)))
+        val source = FakeMarketDataSource(
+            Result.Success(
+                data = listOf(freshCryptoQuote),
+                notice = "Překročen denní limit 25 požadavků pro Alpha Vantage.",
+            ),
+        )
+        val repository = repository(
+            quoteStore = quoteStore,
+            source = source,
+            nowMillis = 2_000_000L,
+        )
+
+        val result = repository.refreshQuotes(listOf(cryptoAsset, avAsset), currency = "usd")
+
+        assertTrue(result is Result.Success)
+        result as Result.Success
+        assertEquals(listOf("cg:bitcoin", "av:c:WTI"), result.data.map { it.assetId })
+        assertEquals(62_000.0, result.data.first { it.assetId == "cg:bitcoin" }.price, 0.0)
+        assertEquals(70.0, result.data.first { it.assetId == "av:c:WTI" }.price, 0.0)
+        assertEquals("Alpha Vantage limit je dnes vyčerpaný. Zobrazuji poslední uložená data.", result.notice)
     }
 
     private fun repository(

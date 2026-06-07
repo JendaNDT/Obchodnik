@@ -82,10 +82,28 @@ fun Holding.toEntity(): HoldingEntity =
     HoldingEntity(id = id, assetId = assetId, qty = qty, avgPrice = avgPrice)
 
 fun AlertEntity.toDomain(): PriceAlert =
-    PriceAlert(id = id, assetId = assetId, above = above, target = target, enabled = enabled, triggeredAt = triggeredAt)
+    PriceAlert(
+        id = id,
+        assetId = assetId,
+        above = above,
+        target = target,
+        enabled = enabled,
+        triggeredAt = triggeredAt,
+        triggeredPrice = triggeredPrice,
+        triggeredCurrency = triggeredCurrency,
+    )
 
 fun PriceAlert.toEntity(): AlertEntity =
-    AlertEntity(id = id, assetId = assetId, above = above, target = target, enabled = enabled, triggeredAt = triggeredAt)
+    AlertEntity(
+        id = id,
+        assetId = assetId,
+        above = above,
+        target = target,
+        enabled = enabled,
+        triggeredAt = triggeredAt,
+        triggeredPrice = triggeredPrice,
+        triggeredCurrency = triggeredCurrency,
+    )
 
 fun pricePointsToEntity(
     assetId: String,

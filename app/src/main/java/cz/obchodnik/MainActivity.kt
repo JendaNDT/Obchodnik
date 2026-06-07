@@ -253,6 +253,7 @@ private fun ObchodnikAppContent(
                     state = state,
                     onAddAlert = viewModel::addAlert,
                     onToggleAlert = viewModel::toggleAlertEnabled,
+                    onReactivateAlert = viewModel::reactivateAlert,
                     onDeleteAlert = viewModel::deleteAlert,
                 )
             }

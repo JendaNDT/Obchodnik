@@ -63,7 +63,9 @@ class RefreshWorker(
                         // Deactivate the alert and record the trigger time
                         val updatedAlert = alert.copy(
                             enabled = false,
-                            triggeredAt = System.currentTimeMillis()
+                            triggeredAt = System.currentTimeMillis(),
+                            triggeredPrice = currentPrice,
+                            triggeredCurrency = currency,
                         )
                         alertRepository.save(updatedAlert)
 

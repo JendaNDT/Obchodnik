@@ -17,6 +17,7 @@ data class DetailUiState(
     val inWatchlist: Boolean = false,
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
+    val noticeMessage: String? = null,
 )
 
 enum class ChartMode(val label: String) {

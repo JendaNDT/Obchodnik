@@ -50,7 +50,7 @@ class DataSourceRouter(
         if (results.isEmpty() && errorMessage != null) {
             Result.Error(errorMessage, errorCause)
         } else {
-            Result.Success(results)
+            Result.Success(results, notice = errorMessage)
         }
     }
 

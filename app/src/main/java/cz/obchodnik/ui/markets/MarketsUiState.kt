@@ -10,6 +10,7 @@ data class MarketsUiState(
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
     val errorMessage: String? = null,
+    val noticeMessage: String? = null,
 )
 
 data class MarketAssetUi(

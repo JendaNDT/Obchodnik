@@ -135,6 +135,14 @@ fun MarketsScreen(
                     )
                 }
             }
+            if (state.noticeMessage != null) {
+                item {
+                    NoticeStrip(
+                        message = state.noticeMessage,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    )
+                }
+            }
             if (state.isLoading) {
                 items(6) {
                     MarketSkeletonRow()
@@ -402,6 +410,20 @@ private fun MarketSkeletonRow() {
         }
         SkeletonBlock(Modifier.width(78.dp).height(13.dp))
     }
+}
+
+@Composable
+private fun NoticeStrip(message: String, modifier: Modifier = Modifier) {
+    val c = Obchodnik.colors
+    Text(
+        text = message,
+        color = c.text2,
+        fontSize = 12.sp,
+        modifier = modifier
+            .background(c.accent.copy(alpha = 0.10f), RoundedCornerShape(Obchodnik.radii.radiusSm))
+            .border(1.dp, c.accent.copy(alpha = 0.24f), RoundedCornerShape(Obchodnik.radii.radiusSm))
+            .padding(12.dp),
+    )
 }
 
 @Composable

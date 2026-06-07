@@ -72,10 +72,25 @@ class MarketRepository(
         return when (val remote = marketDataSource.quotes(assets, normalizedCurrency)) {
             is Result.Success -> {
                 quoteStore.upsertQuotes(remote.data.map { it.toEntity(json) })
-                Result.Success(remote.data)
+                val remoteAssetIds = remote.data.map { it.assetId }.toSet()
+                val fallbackCached = cached.filter { it.assetId !in remoteAssetIds }
+                Result.Success(
+                    data = remote.data + fallbackCached,
+                    notice = remote.notice?.let {
+                        if (fallbackCached.isNotEmpty()) {
+                            cacheFallbackNotice(it)
+                        } else {
+                            partialRefreshNotice(it)
+                        }
+                    },
+                )
             }
             is Result.Error -> {
-                if (cached.isNotEmpty()) Result.Success(cached) else remote
+                if (cached.isNotEmpty()) {
+                    Result.Success(cached, notice = cacheFallbackNotice(remote.message))
+                } else {
+                    remote
+                }
             }
             Result.Loading -> Result.Loading
         }
@@ -108,7 +123,11 @@ class MarketRepository(
             }
             is Result.Error -> {
                 val cachedPoints = cached?.toPricePoints(json).orEmpty()
-                if (cachedPoints.isNotEmpty()) Result.Success(cachedPoints) else remote
+                if (cachedPoints.isNotEmpty()) {
+                    Result.Success(cachedPoints, notice = cacheFallbackNotice(remote.message))
+                } else {
+                    remote
+                }
             }
             Result.Loading -> Result.Loading
         }
@@ -141,11 +160,35 @@ class MarketRepository(
             }
             is Result.Error -> {
                 val cachedCandles = cached?.toCandles(json).orEmpty()
-                if (cachedCandles.isNotEmpty()) Result.Success(cachedCandles) else remote
+                if (cachedCandles.isNotEmpty()) {
+                    Result.Success(cachedCandles, notice = cacheFallbackNotice(remote.message))
+                } else {
+                    remote
+                }
             }
             Result.Loading -> Result.Loading
         }
     }
+
+    private fun cacheFallbackNotice(message: String): String =
+        when {
+            message.contains("Překročen denní limit", ignoreCase = true) ->
+                "Alpha Vantage limit je dnes vyčerpaný. Zobrazuji poslední uložená data."
+            message.contains("API klíč", ignoreCase = true) ->
+                "Alpha Vantage klíč chybí. Zobrazuji poslední uložená data."
+            else ->
+                "Čerstvá data se nepodařilo načíst. Zobrazuji poslední uložená data."
+        }
+
+    private fun partialRefreshNotice(message: String): String =
+        when {
+            message.contains("Překročen denní limit", ignoreCase = true) ->
+                "Alpha Vantage limit je dnes vyčerpaný. Některá data se neaktualizovala."
+            message.contains("API klíč", ignoreCase = true) ->
+                "Alpha Vantage klíč chybí. Některá data se neaktualizovala."
+            else ->
+                "Některá čerstvá data se nepodařilo načíst."
+        }
 
     private fun isHistoryStale(updatedAt: Long, range: ChartRange): Boolean {
         val ttlMillis = when (range) {

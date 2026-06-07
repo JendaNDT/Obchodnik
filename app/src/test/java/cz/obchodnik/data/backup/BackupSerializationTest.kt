@@ -28,7 +28,17 @@ class BackupSerializationTest {
                 BackupAsset("av:c:WTI", "WTI", "Ropa WTI", "COMMODITY", "ALPHAVANTAGE", "WTI", null, null),
             ),
             holdings = listOf(BackupHolding("cg:bitcoin", 0.5, 50_000.0)),
-            alerts = listOf(BackupAlert("cg:bitcoin", true, 70_000.0, true)),
+            alerts = listOf(
+                BackupAlert(
+                    assetId = "cg:bitcoin",
+                    above = true,
+                    target = 70_000.0,
+                    enabled = false,
+                    triggeredAt = 1_700_000_000_000L,
+                    triggeredPrice = 71_000.0,
+                    triggeredCurrency = "usd",
+                ),
+            ),
             settings = BackupSettings(theme = "aurora", accent = "green", currency = "czk"),
         )
 

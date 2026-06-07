@@ -70,7 +70,15 @@ class BackupRepository(
                 BackupHolding(assetId = it.assetId, qty = it.qty, avgPrice = it.avgPrice)
             },
             alerts = alertRepository.observeAlerts().first().map {
-                BackupAlert(assetId = it.assetId, above = it.above, target = it.target, enabled = it.enabled)
+                BackupAlert(
+                    assetId = it.assetId,
+                    above = it.above,
+                    target = it.target,
+                    enabled = it.enabled,
+                    triggeredAt = it.triggeredAt,
+                    triggeredPrice = it.triggeredPrice,
+                    triggeredCurrency = it.triggeredCurrency,
+                )
             },
             settings = settings.toBackup(includeApiKeys),
         )
@@ -110,7 +118,9 @@ class BackupRepository(
                     above = alert.above,
                     target = alert.target,
                     enabled = alert.enabled,
-                    triggeredAt = null,
+                    triggeredAt = alert.triggeredAt,
+                    triggeredPrice = alert.triggeredPrice,
+                    triggeredCurrency = alert.triggeredCurrency,
                 ),
             )
         }

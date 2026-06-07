@@ -1,6 +1,5 @@
 package cz.obchodnik.data.local
 
-import androidx.room.Room
 import androidx.room.testing.MigrationTestHelper
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -20,25 +19,28 @@ class ObchodnikDatabaseMigrationTest {
     )
 
     @Test
-    fun version2SchemaOpensWithCurrentRoomDatabase() {
+    fun migratesFromVersion2ToCurrentSchema() {
         helper.createDatabase(TEST_DB, 2).apply {
             insertVersion2SeedRows()
             close()
         }
 
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val database = Room.databaseBuilder(context, ObchodnikDatabase::class.java, TEST_DB)
-            .addMigrations(*ObchodnikDatabase.MIGRATIONS)
-            .build()
-        try {
-            val db = database.openHelper.writableDatabase
-            assertEquals(1, db.queryLong("SELECT COUNT(*) FROM assets"))
-            assertEquals(1, db.queryLong("SELECT COUNT(*) FROM quotes"))
-            assertEquals(1, db.queryLong("SELECT COUNT(*) FROM history"))
-            assertEquals(1, db.queryLong("SELECT COUNT(*) FROM holdings"))
-            assertEquals(1, db.queryLong("SELECT COUNT(*) FROM alerts"))
-        } finally {
-            database.close()
+        val db = helper.runMigrationsAndValidate(
+            TEST_DB,
+            3,
+            true,
+            *ObchodnikDatabase.MIGRATIONS,
+        )
+
+        assertEquals(1, db.queryLong("SELECT COUNT(*) FROM assets"))
+        assertEquals(1, db.queryLong("SELECT COUNT(*) FROM quotes"))
+        assertEquals(1, db.queryLong("SELECT COUNT(*) FROM history"))
+        assertEquals(1, db.queryLong("SELECT COUNT(*) FROM holdings"))
+        assertEquals(1, db.queryLong("SELECT COUNT(*) FROM alerts"))
+        db.query("SELECT triggeredPrice, triggeredCurrency FROM alerts WHERE id = 1").use { cursor ->
+            cursor.moveToFirst()
+            assertEquals(true, cursor.isNull(0))
+            assertEquals(true, cursor.isNull(1))
         }
     }
 

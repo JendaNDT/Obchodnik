@@ -85,7 +85,17 @@ class BackupRepositoryImportTest {
                 BackupAsset("broken", "BAD", "Broken", "UNKNOWN", "COINGECKO", "broken"),
             ),
             holdings = listOf(BackupHolding("cg:bitcoin", qty = 0.25, avgPrice = 50_000.0)),
-            alerts = listOf(BackupAlert("cg:bitcoin", above = true, target = 70_000.0, enabled = true)),
+            alerts = listOf(
+                BackupAlert(
+                    assetId = "cg:bitcoin",
+                    above = true,
+                    target = 70_000.0,
+                    enabled = false,
+                    triggeredAt = 1_700_000_000_000L,
+                    triggeredPrice = 71_000.0,
+                    triggeredCurrency = "usd",
+                ),
+            ),
             settings = BackupSettings(
                 theme = "aurora",
                 accent = "green",
@@ -120,8 +130,10 @@ class BackupRepositoryImportTest {
         assertEquals("cg:bitcoin", alert.assetId)
         assertTrue(alert.above)
         assertEquals(70_000.0, alert.target, 0.0)
-        assertTrue(alert.enabled)
-        assertNull(alert.triggeredAt)
+        assertFalse(alert.enabled)
+        assertEquals(1_700_000_000_000L, alert.triggeredAt)
+        assertEquals(71_000.0, alert.triggeredPrice ?: 0.0, 0.0)
+        assertEquals("usd", alert.triggeredCurrency)
 
         val settings = settingsRepository.settings.first()
         assertEquals("aurora", settings.theme)

@@ -142,6 +142,43 @@ class AlertsViewModelTest {
     }
 
     @Test
+    fun `reactivate alert clears trigger metadata`() = testScope.runTest {
+        val viewModel = AlertsViewModel(
+            alertRepository = alertRepository,
+            watchlistRepository = watchlistRepository,
+            settingsRepository = settingsRepository
+        )
+
+        val collectJob = launch(UnconfinedTestDispatcher()) {
+            viewModel.uiState.collect {}
+        }
+
+        alertRepository.save(
+            cz.obchodnik.domain.model.PriceAlert(
+                id = 0,
+                assetId = "cg:bitcoin",
+                above = true,
+                target = 65_000.0,
+                enabled = false,
+                triggeredAt = 1_700_000_000_000L,
+                triggeredPrice = 66_000.0,
+                triggeredCurrency = "usd",
+            )
+        )
+
+        val alert = viewModel.uiState.value.items.first().alert
+        viewModel.reactivateAlert(alert)
+
+        val updatedAlert = viewModel.uiState.value.items.first().alert
+        assertTrue(updatedAlert.enabled)
+        assertEquals(null, updatedAlert.triggeredAt)
+        assertEquals(null, updatedAlert.triggeredPrice)
+        assertEquals(null, updatedAlert.triggeredCurrency)
+
+        collectJob.cancel()
+    }
+
+    @Test
     fun `delete alert removes it`() = testScope.runTest {
         val viewModel = AlertsViewModel(
             alertRepository = alertRepository,

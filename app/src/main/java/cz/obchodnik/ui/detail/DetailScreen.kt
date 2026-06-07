@@ -285,6 +285,13 @@ private fun DataInfoFooter(state: DetailUiState, modifier: Modifier = Modifier) 
             fontFamily = JetBrainsMono,
             fontSize = 11.sp,
         )
+        if (state.noticeMessage != null) {
+            Text(
+                text = state.noticeMessage,
+                color = c.text2,
+                fontSize = 11.sp,
+            )
+        }
         when (asset?.type) {
             AssetType.INDEX -> Text(
                 text = "Hodnota přibližně přes ETF zástupce (SPY/QQQ/DIA).",
