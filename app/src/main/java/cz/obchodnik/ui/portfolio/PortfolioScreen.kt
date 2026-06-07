@@ -115,6 +115,10 @@ fun PortfolioScreen(
                 }
 
                 item {
+                    InsightsCard(state = state)
+                }
+
+                item {
                     Text(
                         text = "AKTIVNÍ POZICE",
                         color = c.text3,
@@ -196,6 +200,124 @@ private fun PortfolioTopBar(
         }
     }
 }
+
+@Composable
+private fun InsightsCard(state: PortfolioUiState) {
+    val c = Obchodnik.colors
+    val insights = state.insights
+    ObchodnikCard(
+        modifier = Modifier.fillMaxWidth(),
+        padding = PaddingValues(14.dp),
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(
+                text = "RYCHLÝ PŘEHLED",
+                color = c.text3,
+                fontFamily = JetBrainsMono,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 10.sp,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                InsightTile(
+                    label = "Pozic",
+                    value = insights.positionCount.toString(),
+                    modifier = Modifier.weight(1f),
+                )
+                InsightTile(
+                    label = "Investováno",
+                    value = MarketFormatters.price(state.totalInvested, state.currency),
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            insights.largestPosition?.let { item ->
+                val share = insights.largestPositionSharePct?.let { MarketFormatters.percent(it) } ?: "—"
+                InsightLine(
+                    label = "Největší pozice",
+                    symbol = item.asset.symbol,
+                    value = "${MarketFormatters.price(item.value, state.currency)} · $share",
+                    valueColor = c.text,
+                )
+            }
+            insights.bestPerformer?.let { item ->
+                InsightLine(
+                    label = "Největší zisk",
+                    symbol = item.asset.symbol,
+                    value = signedPrice(item.plValue, state.currency),
+                    valueColor = if (item.plValue >= 0.0) c.up else c.down,
+                )
+            }
+            insights.worstPerformer?.let { item ->
+                InsightLine(
+                    label = "Největší ztráta",
+                    symbol = item.asset.symbol,
+                    value = signedPrice(item.plValue, state.currency),
+                    valueColor = if (item.plValue >= 0.0) c.up else c.down,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun InsightTile(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+) {
+    val c = Obchodnik.colors
+    Column(
+        modifier = modifier
+            .background(c.surface2, RoundedCornerShape(Obchodnik.radii.radiusSm))
+            .border(1.dp, c.border, RoundedCornerShape(Obchodnik.radii.radiusSm))
+            .padding(10.dp),
+    ) {
+        Text(text = label, color = c.text3, fontSize = 11.sp)
+        Text(
+            text = value,
+            color = c.text,
+            fontFamily = JetBrainsMono,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 12.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(top = 3.dp),
+        )
+    }
+}
+
+@Composable
+private fun InsightLine(
+    label: String,
+    symbol: String,
+    value: String,
+    valueColor: Color,
+) {
+    val c = Obchodnik.colors
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = label, color = c.text3, fontSize = 11.sp)
+            Text(
+                text = symbol,
+                color = c.text,
+                fontFamily = JetBrainsMono,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 13.sp,
+                modifier = Modifier.padding(top = 2.dp),
+            )
+        }
+        Text(
+            text = value,
+            color = valueColor,
+            fontFamily = JetBrainsMono,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 12.sp,
+            maxLines = 1,
+        )
+    }
+}
+
+private fun signedPrice(value: Double, currency: String): String =
+    (if (value >= 0.0) "+" else "") + MarketFormatters.price(value, currency)
 
 @Composable
 private fun SummaryCard(state: PortfolioUiState) {

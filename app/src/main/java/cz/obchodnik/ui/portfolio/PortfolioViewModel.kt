@@ -32,6 +32,7 @@ data class PortfolioUiState(
     val totalInvested: Double = 0.0,
     val totalPL: Double = 0.0,
     val totalPLPct: Double? = null,
+    val insights: PortfolioInsights = PortfolioInsights(),
     val currency: String = "usd",
     val allWatchlistAssets: List<Asset> = emptyList(),
     val isLoading: Boolean = false,
@@ -91,6 +92,7 @@ class PortfolioViewModel(
                 val totalInvested = items.sumOf { it.invested }
                 val totalPL = totalValue - totalInvested
                 val totalPLPct = if (totalInvested > 0.0) (totalPL / totalInvested) * 100.0 else null
+                val insights = PortfolioInsightsCalculator.calculate(items, totalValue)
 
                 PortfolioUiState(
                     items = items,
@@ -98,6 +100,7 @@ class PortfolioViewModel(
                     totalInvested = totalInvested,
                     totalPL = totalPL,
                     totalPLPct = totalPLPct,
+                    insights = insights,
                     currency = currency,
                     allWatchlistAssets = watchlist,
                     isLoading = false
