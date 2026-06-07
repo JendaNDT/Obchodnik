@@ -86,6 +86,10 @@ Vylepšení po 1.0:
 - Trh: uložené vlastní pohledy watchlistu (pojmenovaná kombinace filtr+řazení).
 - Alerty: opakované alerty s hysterezí (re-arm po návratu ceny za cíl).
 - Portfolio: graf vývoje hodnoty v čase (denní snapshoty, rozsahy 1T/1M/1R/VŠE).
+- Alerty: deep linking z push notifikací cenových alertů na detail příslušného aktiva.
+- Detail: interaktivní cenový graf s křížovým ukazatelem a tooltipem s přesnou historickou cenou a časem.
+- Widget: stránkování watchlistu ve středním a velkém widgetu tlačítky ◀/▶.
+- Detail: integrace AI tržních analýz a predikcí pomocí Google Gemini API.
 
 Otevřené nápady: žádné — celý plánovaný backlog je hotový (uložené pohledy
 watchlistu, opakované alerty i graf vývoje hodnoty portfolia). Sentry crash

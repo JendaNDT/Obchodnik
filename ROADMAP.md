@@ -42,6 +42,10 @@ Legenda: ✅ hotovo · ⏳ čeká · ✖ přeskočeno
 33. ✅ Trh: uložené vlastní pohledy watchlistu (uložení/aplikace/mazání, perzistence v DataStore)
 34. ✅ Alerty: opakované alerty s hysterezí (přepínač Opakovat, re-arm po návratu ceny; DB v4)
 35. ✅ Portfolio: graf vývoje hodnoty v čase (denní snapshoty, rozsahy 1T/1M/1R/VŠE; DB v5)
+36. ✅ Alerty: deep linking z push notifikací cenových alertů na detail příslušného aktiva
+37. ✅ Detail: interaktivní cenový graf s křížovým ukazatelem a tooltipem s přesnou historickou cenou a časem
+38. ✅ Widget: stránkování watchlistu ve středním a velkém widgetu tlačítky ◀/▶
+39. ✅ Detail: integrace AI tržních analýz a predikcí pomocí Google Gemini API
 
 Nápady do budoucna: žádné otevřené — backlog je hotový.
 
