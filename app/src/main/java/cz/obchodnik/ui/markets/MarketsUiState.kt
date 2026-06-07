@@ -15,6 +15,8 @@ data class MarketsUiState(
     val isRefreshing: Boolean = false,
     val errorMessage: String? = null,
     val noticeMessage: String? = null,
+    val fngValue: Int = 50,
+    val fngClassification: String = "Neutral",
 )
 
 data class MarketAssetUi(

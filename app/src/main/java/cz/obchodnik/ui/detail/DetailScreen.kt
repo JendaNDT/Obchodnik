@@ -380,6 +380,7 @@ private fun RangeTabs(
                 fontFamily = JetBrainsMono,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 12.sp,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                 modifier = Modifier
                     .weight(1f)
                     .background(if (active) c.surface2 else androidx.compose.ui.graphics.Color.Transparent, RoundedCornerShape(Obchodnik.radii.chip))
@@ -554,7 +555,7 @@ private fun AiAnalysisCard(
                 )
                 
                 Text(
-                    text = "Gemini 1.5 Flash",
+                    text = "Gemini 3.5 Flash",
                     color = c.accent.copy(alpha = 0.85f),
                     fontFamily = JetBrainsMono,
                     fontWeight = FontWeight.SemiBold,

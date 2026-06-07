@@ -196,7 +196,7 @@ class DetailViewModel(
 
             try {
                 val generativeModel = com.google.ai.client.generativeai.GenerativeModel(
-                    modelName = "gemini-1.5-flash",
+                    modelName = "gemini-3.5-flash",
                     apiKey = apiKey
                 )
 

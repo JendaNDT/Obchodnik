@@ -74,6 +74,7 @@ import cz.obchodnik.ui.components.SkeletonBlock
 import cz.obchodnik.ui.components.Sparkline
 import cz.obchodnik.ui.theme.JetBrainsMono
 import cz.obchodnik.ui.theme.Obchodnik
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun MarketsScreen(
@@ -153,6 +154,8 @@ fun MarketsScreen(
         ) {
             item {
                 FearGreedCard(
+                    value = state.fngValue,
+                    classification = state.fngClassification,
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 4.dp),
                 )
             }
@@ -338,6 +341,7 @@ private fun WatchlistControls(
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 11.sp,
                     maxLines = 1,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     modifier = Modifier
                         .weight(1f)
                         .background(
@@ -403,11 +407,30 @@ private fun MarketsTopBar(
 }
 
 @Composable
-private fun FearGreedCard(modifier: Modifier = Modifier) {
+private fun FearGreedCard(
+    value: Int,
+    classification: String,
+    modifier: Modifier = Modifier,
+) {
     val c = Obchodnik.colors
+    val color = when {
+        value < 20 -> Color(0xFFEA3943) // Extreme Fear
+        value < 40 -> Color(0xFFFF9F00) // Fear
+        value < 60 -> Color(0xFFFFD700) // Neutral
+        value < 80 -> Color(0xFF90EE90) // Greed
+        else -> Color(0xFF16C784) // Extreme Greed
+    }
+    val translatedClass = when (classification.lowercase()) {
+        "extreme fear" -> "Extrémní strach"
+        "fear" -> "Strach"
+        "neutral" -> "Neutrální"
+        "greed" -> "Chamtivost"
+        "extreme greed" -> "Extrémní chamtivost"
+        else -> classification
+    }
     ObchodnikCard(modifier = modifier, padding = PaddingValues(14.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            MiniGauge(value = 72, modifier = Modifier.size(48.dp))
+            MiniGauge(value = value, color = color, modifier = Modifier.size(48.dp))
             Spacer(Modifier.width(14.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -418,16 +441,16 @@ private fun FearGreedCard(modifier: Modifier = Modifier) {
                     fontSize = 10.sp,
                 )
                 Text(
-                    text = "Chamtivost",
-                    color = c.up,
+                    text = translatedClass,
+                    color = color,
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp,
                     modifier = Modifier.padding(top = 3.dp),
                 )
             }
             Text(
-                text = "72",
-                color = c.up,
+                text = value.toString(),
+                color = color,
                 fontFamily = JetBrainsMono,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
@@ -437,7 +460,7 @@ private fun FearGreedCard(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun MiniGauge(value: Int, modifier: Modifier = Modifier) {
+private fun MiniGauge(value: Int, color: Color, modifier: Modifier = Modifier) {
     val c = Obchodnik.colors
     Canvas(modifier = modifier) {
         val stroke = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
@@ -445,7 +468,7 @@ private fun MiniGauge(value: Int, modifier: Modifier = Modifier) {
         val center = Offset(size.width / 2f, size.height / 2f)
         drawCircle(color = c.borderStrong, radius = radius, center = center, style = stroke)
         drawArc(
-            color = c.up,
+            color = color,
             startAngle = -90f,
             sweepAngle = 360f * (value / 100f),
             useCenter = false,

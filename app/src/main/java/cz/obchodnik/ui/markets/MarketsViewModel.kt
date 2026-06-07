@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import cz.obchodnik.ObchodnikApp
 import cz.obchodnik.core.Result
 import cz.obchodnik.data.prefs.SettingsRepository
+import cz.obchodnik.data.repository.FngRepository
 import cz.obchodnik.data.repository.MarketRepository
 import cz.obchodnik.data.repository.WatchlistRepository
 import cz.obchodnik.domain.model.DefaultAssets
@@ -25,6 +26,7 @@ class MarketsViewModel(
     private val watchlistRepository: WatchlistRepository,
     private val marketRepository: MarketRepository,
     private val settingsRepository: SettingsRepository,
+    private val fngRepository: FngRepository,
 ) : ViewModel() {
     private val selectedCategory = MutableStateFlow(MarketCategory.ALL)
     private val query = MutableStateFlow("")
@@ -71,6 +73,8 @@ class MarketsViewModel(
             isRefreshing = refreshing,
             errorMessage = error,
             noticeMessage = notice,
+            fngValue = settings.fngValue,
+            fngClassification = settings.fngClassification,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -143,6 +147,10 @@ class MarketsViewModel(
             isRefreshing.value = true
             val watchlist = watchlistRepository.watchlist()
             val currency = settingsRepository.settings.first().currency
+            
+            // Refresh Fear & Greed index
+            fngRepository.getCurrentFng()
+
             when (val result = marketRepository.refreshQuotes(watchlist, currency, force)) {
                 is Result.Error -> {
                     errorMessage.value = result.message
@@ -180,6 +188,7 @@ class MarketsViewModel(
                         watchlistRepository = app.container.watchlistRepository,
                         marketRepository = app.container.marketRepository,
                         settingsRepository = app.container.settingsRepository,
+                        fngRepository = app.container.fngRepository,
                     ) as T
                 }
             }
