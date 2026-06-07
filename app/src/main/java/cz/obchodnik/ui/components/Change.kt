@@ -38,7 +38,7 @@ fun Change(
     if (chip) {
         Row(
             modifier = modifier
-                .background(color.copy(alpha = 0.13f), RoundedCornerShape(999.dp))
+                .background(color.copy(alpha = 0.13f), RoundedCornerShape(Obchodnik.radii.chip))
                 .padding(horizontal = 8.dp, vertical = 4.dp),
         ) {
             content()

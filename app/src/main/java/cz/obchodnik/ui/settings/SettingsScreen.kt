@@ -389,7 +389,7 @@ fun SettingsScreen(
                                 Button(
                                     onClick = { exportLauncher.launch("obchodnik-zaloha.json") },
                                     modifier = Modifier.weight(1f),
-                                    shape = RoundedCornerShape(Obchodnik.radii.chip),
+                                    shape = RoundedCornerShape(Obchodnik.radii.radius),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = c.accent,
                                         contentColor = c.onAccent,
@@ -404,7 +404,7 @@ fun SettingsScreen(
                                         )
                                     },
                                     modifier = Modifier.weight(1f),
-                                    shape = RoundedCornerShape(Obchodnik.radii.chip),
+                                    shape = RoundedCornerShape(Obchodnik.radii.radius),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = c.surface2,
                                         contentColor = c.text,
@@ -428,7 +428,7 @@ fun SettingsScreen(
                             ) {
                                 Button(
                                     onClick = onResetOnboarding,
-                                    shape = RoundedCornerShape(Obchodnik.radii.chip),
+                                    shape = RoundedCornerShape(Obchodnik.radii.radius),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = c.surface2,
                                         contentColor = c.text
@@ -542,7 +542,7 @@ private fun ImportPreviewDialog(
         confirmButton = {
             Button(
                 onClick = onConfirm,
-                shape = RoundedCornerShape(Obchodnik.radii.chip),
+                shape = RoundedCornerShape(Obchodnik.radii.radius),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = c.accent,
                     contentColor = c.onAccent,

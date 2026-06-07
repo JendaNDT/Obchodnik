@@ -36,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -205,6 +206,7 @@ fun DetailScreen(
                 ActionButtons(
                     inWatchlist = state.inWatchlist,
                     onToggleWatch = onToggleWatch,
+                    onAddAlert = { showAlertSheet = true },
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
                 )
             }
@@ -453,6 +455,7 @@ private fun StatTile(label: String, value: String, modifier: Modifier = Modifier
 private fun ActionButtons(
     inWatchlist: Boolean,
     onToggleWatch: () -> Unit,
+    onAddAlert: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val c = Obchodnik.colors
@@ -460,7 +463,9 @@ private fun ActionButtons(
         Row(
             modifier = Modifier
                 .weight(1f)
+                .clip(RoundedCornerShape(Obchodnik.radii.radius))
                 .border(1.dp, c.borderStrong, RoundedCornerShape(Obchodnik.radii.radius))
+                .clickable { onAddAlert() }
                 .padding(13.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
@@ -472,6 +477,7 @@ private fun ActionButtons(
         Row(
             modifier = Modifier
                 .weight(1f)
+                .clip(RoundedCornerShape(Obchodnik.radii.radius))
                 .background(c.accent, RoundedCornerShape(Obchodnik.radii.radius))
                 .clickable { onToggleWatch() }
                 .padding(13.dp),
