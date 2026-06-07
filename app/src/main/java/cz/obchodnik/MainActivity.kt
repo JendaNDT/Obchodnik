@@ -220,6 +220,7 @@ private fun ObchodnikAppContent(
                     onRefresh = { viewModel.refresh(force = true) },
                     onSearch = { navController.navigate("search") },
                     onOpenAsset = { assetId -> navController.navigate("detail/${Uri.encode(assetId)}") },
+                    onMoveAsset = viewModel::moveAsset,
                     onOpenSettings = { navController.navigate("settings") },
                     onOpenAlerts = { navController.navigate("alerts") },
                 )
@@ -232,6 +233,7 @@ private fun ObchodnikAppContent(
                 cz.obchodnik.ui.portfolio.PortfolioScreen(
                     state = state,
                     onAddPosition = viewModel::addPosition,
+                    onUpdatePosition = viewModel::updatePosition,
                     onDeletePosition = viewModel::deletePosition,
                 )
             }

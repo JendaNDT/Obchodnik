@@ -21,11 +21,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Search
@@ -68,6 +71,7 @@ fun MarketsScreen(
     onRefresh: () -> Unit,
     onSearch: () -> Unit,
     onOpenAsset: (String) -> Unit,
+    onMoveAsset: (String, Int) -> Unit,
     onOpenSettings: () -> Unit,
     onOpenAlerts: () -> Unit,
     modifier: Modifier = Modifier,
@@ -156,13 +160,18 @@ fun MarketsScreen(
                     )
                 }
             } else {
-                items(
+                itemsIndexed(
                     items = state.assets,
-                    key = { it.asset.id },
-                ) { row ->
+                    key = { _, row -> row.asset.id },
+                ) { index, row ->
                     MarketAssetRow(
                         row = row,
                         currency = state.currency,
+                        showReorder = state.selectedCategory == MarketCategory.ALL,
+                        canMoveUp = index > 0,
+                        canMoveDown = index < state.assets.lastIndex,
+                        onMoveUp = { onMoveAsset(row.asset.id, -1) },
+                        onMoveDown = { onMoveAsset(row.asset.id, 1) },
                         onClick = { onOpenAsset(row.asset.id) },
                     )
                 }
@@ -316,6 +325,11 @@ private fun CategoryTabs(
 private fun MarketAssetRow(
     row: MarketAssetUi,
     currency: String,
+    showReorder: Boolean,
+    canMoveUp: Boolean,
+    canMoveDown: Boolean,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit,
     onClick: () -> Unit,
 ) {
     val c = Obchodnik.colors
@@ -389,6 +403,34 @@ private fun MarketAssetRow(
                 maxLines = 1,
             )
             Change(value = quote?.change24hPct, modifier = Modifier.padding(top = 3.dp))
+        }
+        if (showReorder) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(30.dp)) {
+                IconButton(
+                    onClick = onMoveUp,
+                    enabled = canMoveUp,
+                    modifier = Modifier.size(28.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.KeyboardArrowUp,
+                        contentDescription = "Posunout nahoru",
+                        tint = if (canMoveUp) c.text2 else c.text3.copy(alpha = 0.35f),
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+                IconButton(
+                    onClick = onMoveDown,
+                    enabled = canMoveDown,
+                    modifier = Modifier.size(28.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.KeyboardArrowDown,
+                        contentDescription = "Posunout dolů",
+                        tint = if (canMoveDown) c.text2 else c.text3.copy(alpha = 0.35f),
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+            }
         }
     }
 }

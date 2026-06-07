@@ -116,6 +116,17 @@ class PortfolioViewModel(
         }
     }
 
+    fun updatePosition(holding: Holding, qty: Double, avgPrice: Double) {
+        viewModelScope.launch {
+            portfolioRepository.save(
+                holding.copy(
+                    qty = qty,
+                    avgPrice = avgPrice,
+                ),
+            )
+        }
+    }
+
     fun deletePosition(holding: Holding) {
         viewModelScope.launch {
             portfolioRepository.delete(holding)

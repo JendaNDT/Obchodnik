@@ -41,4 +41,22 @@ class WatchlistRepository(
     suspend fun remove(assetId: String) {
         assetStore.setWatchlistState(assetId, inWatchlist = false, sortOrder = Int.MAX_VALUE)
     }
+
+    suspend fun move(assetId: String, offset: Int) {
+        if (offset == 0) return
+        val current = assetStore.watchlistAssets()
+        val from = current.indexOfFirst { it.id == assetId }
+        if (from < 0) return
+        val to = (from + offset).coerceIn(0, current.lastIndex)
+        if (from == to) return
+
+        val reordered = current.toMutableList()
+        val moved = reordered.removeAt(from)
+        reordered.add(to, moved)
+        assetStore.upsertAssets(
+            reordered.mapIndexed { index, asset ->
+                asset.copy(sortOrder = index)
+            },
+        )
+    }
 }

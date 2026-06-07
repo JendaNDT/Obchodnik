@@ -37,6 +37,28 @@ class WatchlistRepositoryTest {
         assertFalse(stored?.inWatchlist ?: true)
     }
 
+    @Test
+    fun `move reorders watchlist and normalizes sort orders`() = runTest {
+        val store = FakeAssetStore()
+        val repository = WatchlistRepository(store)
+
+        repository.add(asset("cg:bitcoin", "BTC"))
+        repository.add(asset("cg:ethereum", "ETH"))
+        repository.add(asset("cg:solana", "SOL"))
+
+        repository.move("cg:solana", -1)
+
+        var watchlist = store.watchlistAssets()
+        assertEquals(listOf("BTC", "SOL", "ETH"), watchlist.map { it.symbol })
+        assertEquals(listOf(0, 1, 2), watchlist.map { it.sortOrder })
+
+        repository.move("cg:bitcoin", 1)
+
+        watchlist = store.watchlistAssets()
+        assertEquals(listOf("SOL", "BTC", "ETH"), watchlist.map { it.symbol })
+        assertEquals(listOf(0, 1, 2), watchlist.map { it.sortOrder })
+    }
+
     private fun asset(id: String, symbol: String): Asset =
         Asset(
             id = id,

@@ -200,6 +200,69 @@ class PortfolioViewModelTest {
     }
 
     @Test
+    fun `editing position updates existing row and recalculates stats`() = testScope.runTest {
+        val asset = Asset(
+            id = "cg:bitcoin",
+            symbol = "BTC",
+            name = "Bitcoin",
+            type = AssetType.CRYPTO,
+            source = DataProvider.COINGECKO,
+            sourceId = "bitcoin",
+            colorHex = "#f7931a",
+            logoUrl = null
+        )
+        fakeAssetStore.upsertAsset(asset.toEntity(inWatchlist = true, sortOrder = 0))
+
+        val quote = Quote(
+            assetId = "cg:bitcoin",
+            price = 60_000.0,
+            change24hPct = 2.5,
+            change7dPct = null,
+            change30dPct = null,
+            high24h = null,
+            low24h = null,
+            marketCap = null,
+            volume24h = null,
+            sparkline7d = emptyList(),
+            updatedAt = System.currentTimeMillis(),
+            currency = "usd"
+        )
+        fakeQuoteStore.upsertQuotes(listOf(quote.toEntity(json)))
+
+        val viewModel = PortfolioViewModel(
+            portfolioRepository = portfolioRepository,
+            watchlistRepository = watchlistRepository,
+            marketRepository = marketRepository,
+            settingsRepository = settingsRepository
+        )
+
+        val collectJob = launch(UnconfinedTestDispatcher()) {
+            viewModel.uiState.collect {}
+        }
+
+        viewModel.addPosition("cg:bitcoin", qty = 1.0, avgPrice = 50_000.0)
+        val holding = viewModel.uiState.value.items.first().holding
+
+        viewModel.updatePosition(holding, qty = 2.0, avgPrice = 55_000.0)
+
+        val state = viewModel.uiState.value
+        assertEquals(1, state.items.size)
+        val item = state.items.first()
+        assertEquals(holding.id, item.holding.id)
+        assertEquals(2.0, item.holding.qty, 0.0)
+        assertEquals(55_000.0, item.holding.avgPrice, 0.0)
+        assertEquals(120_000.0, item.value, 0.0)
+        assertEquals(110_000.0, item.invested, 0.0)
+        assertEquals(10_000.0, item.plValue, 0.0)
+        assertEquals(9.09, item.plPct ?: 0.0, 0.01)
+        assertEquals(120_000.0, state.totalValue, 0.0)
+        assertEquals(110_000.0, state.totalInvested, 0.0)
+        assertEquals(10_000.0, state.totalPL, 0.0)
+
+        collectJob.cancel()
+    }
+
+    @Test
     fun `deleting position updates stats`() = testScope.runTest {
         // Add position
         val asset = Asset(

@@ -68,18 +68,23 @@ import cz.obchodnik.ui.theme.Obchodnik
 fun PortfolioScreen(
     state: PortfolioUiState,
     onAddPosition: (String, Double, Double) -> Unit,
+    onUpdatePosition: (Holding, Double, Double) -> Unit,
     onDeletePosition: (Holding) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val c = Obchodnik.colors
     var showSheet by remember { mutableStateOf(false) }
+    var editingItem by remember { mutableStateOf<PortfolioItem?>(null) }
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(c.bg)
     ) {
-        PortfolioTopBar(onAddClick = { showSheet = true })
+        PortfolioTopBar(onAddClick = {
+            editingItem = null
+            showSheet = true
+        })
 
         if (state.isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -115,6 +120,10 @@ fun PortfolioScreen(
                     HoldingRow(
                         item = item,
                         currency = state.currency,
+                        onEdit = {
+                            editingItem = item
+                            showSheet = true
+                        },
                         onDelete = { onDeletePosition(item.holding) }
                     )
                 }
@@ -123,13 +132,20 @@ fun PortfolioScreen(
     }
 
     if (showSheet) {
-        AddPositionSheet(
+        PositionSheet(
             watchlist = state.allWatchlistAssets,
             currency = state.currency,
+            editingItem = editingItem,
             onDismiss = { showSheet = false },
             onConfirm = { assetId, qty, price ->
-                onAddPosition(assetId, qty, price)
+                val current = editingItem?.holding
+                if (current == null) {
+                    onAddPosition(assetId, qty, price)
+                } else {
+                    onUpdatePosition(current.copy(assetId = assetId), qty, price)
+                }
                 showSheet = false
+                editingItem = null
             }
         )
     }
@@ -247,13 +263,16 @@ private fun AllocationProgressBar(items: List<PortfolioItem>) {
 private fun HoldingRow(
     item: PortfolioItem,
     currency: String,
+    onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
     val c = Obchodnik.colors
     val plColor = if (item.plValue >= 0.0) c.up else c.down
 
     ObchodnikCard(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onEdit() },
         padding = PaddingValues(12.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -352,18 +371,26 @@ private fun EmptyPortfolio(onAddClick: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AddPositionSheet(
+private fun PositionSheet(
     watchlist: List<Asset>,
     currency: String,
+    editingItem: PortfolioItem?,
     onDismiss: () -> Unit,
     onConfirm: (String, Double, Double) -> Unit,
 ) {
     val c = Obchodnik.colors
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val isEditing = editingItem != null
 
-    var selectedAsset by remember { mutableStateOf<Asset?>(watchlist.firstOrNull()) }
-    var qtyString by remember { mutableStateOf("") }
-    var priceString by remember { mutableStateOf("") }
+    var selectedAsset by remember(editingItem, watchlist) {
+        mutableStateOf(editingItem?.asset ?: watchlist.firstOrNull())
+    }
+    var qtyString by remember(editingItem) {
+        mutableStateOf(editingItem?.holding?.qty?.toString().orEmpty())
+    }
+    var priceString by remember(editingItem) {
+        mutableStateOf(editingItem?.holding?.avgPrice?.toString().orEmpty())
+    }
 
     var expanded by remember { mutableStateOf(false) }
 
@@ -381,7 +408,7 @@ private fun AddPositionSheet(
                 .padding(bottom = 32.dp)
         ) {
             Text(
-                text = "Přidat nákupní pozici",
+                text = if (isEditing) "Upravit pozici" else "Přidat nákupní pozici",
                 color = c.text,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
@@ -518,7 +545,10 @@ private fun AddPositionSheet(
                     .fillMaxWidth()
                     .height(48.dp)
             ) {
-                Text(text = "Uložit pozici", fontWeight = FontWeight.Bold)
+                Text(
+                    text = if (isEditing) "Uložit změny" else "Uložit pozici",
+                    fontWeight = FontWeight.Bold,
+                )
             }
         }
     }

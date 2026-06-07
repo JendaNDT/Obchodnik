@@ -92,6 +92,12 @@ class MarketsViewModel(
         }
     }
 
+    fun moveAsset(assetId: String, offset: Int) {
+        viewModelScope.launch {
+            watchlistRepository.move(assetId, offset)
+        }
+    }
+
     private suspend fun seedDefaultWatchlistIfNeeded() {
         if (watchlistRepository.watchlist().isNotEmpty()) return
         DefaultAssets.watchlist.forEach { asset ->
