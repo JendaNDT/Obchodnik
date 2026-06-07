@@ -279,6 +279,7 @@ fun SettingsScreen(
                 SettingsSection(title = "Zdroj dat & klíče") {
                     ObchodnikCard(padding = androidx.compose.foundation.layout.PaddingValues(14.dp)) {
                         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
                             Column {
                                 Text(
                                     text = "CoinGecko Demo API klíč",
@@ -290,8 +291,21 @@ fun SettingsScreen(
                                     text = "Kryptoměny. Volitelné, bez klíče platí nižší limity požadavků.",
                                     color = c.text3,
                                     fontSize = 11.sp,
-                                    modifier = Modifier.padding(bottom = 8.dp)
                                 )
+                                Row(
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Získat Demo klíč zdarma ↗",
+                                        color = c.accent,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        modifier = Modifier.clickable {
+                                            runCatching { uriHandler.openUri("https://developer.coingecko.com/") }
+                                        }
+                                    )
+                                }
                                 SettingsTextField(
                                     value = state.settings.coingeckoKey,
                                     onValueChange = onCoinGeckoKeyChanged,
@@ -310,8 +324,21 @@ fun SettingsScreen(
                                     text = "Komodity a indexy. Nutné pro jejich správné načítání.",
                                     color = c.text3,
                                     fontSize = 11.sp,
-                                    modifier = Modifier.padding(bottom = 8.dp)
                                 )
+                                Row(
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Získat bezplatný klíč ↗",
+                                        color = c.accent,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        modifier = Modifier.clickable {
+                                            runCatching { uriHandler.openUri("https://www.alphavantage.co/support/#api-key") }
+                                        }
+                                    )
+                                }
                                 SettingsTextField(
                                     value = state.settings.alphaVantageKey,
                                     onValueChange = onAlphaVantageKeyChanged,
