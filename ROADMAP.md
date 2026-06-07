@@ -26,6 +26,13 @@ Legenda: ✅ hotovo · ⏳ čeká · ✖ přeskočeno
 17. ✅ Přístupnost: contentDescription pro grafy/gauge/sparkline
 18. ✅ Widget: tap na řádek → detail, tlačítko ručního refreshe
 19. ✅ Fonty: Hanken Grotesk + JetBrains Mono přes Downloadable Fonts
+20. ✅ Záloha dat: bezpečnější export bez API klíčů ve výchozím stavu, import preview
+21. ✅ Alerty: historie spuštění včetně ceny a měny, možnost znovu aktivovat
+22. ✅ Stáří dat: cache fallback a upozornění při limitu, offline stavu nebo chybějícím Alpha Vantage klíči
+23. ✅ Portfolio: editace existujících pozic
+24. ✅ Trh: ruční řazení watchlistu
+25. ✅ Widget: režimy Vyvážený, Ceny a Grafy
+26. ✅ Detail + Trh: klikací vysvětlení ETF/komoditních aproximací
 
-Nápady do budoucna: instrumentované Room migrační testy; unit test importu zálohy;
-Sentry crash reporting (účet + DSN); vyřadit klíče z exportu zálohy.
+Nápady do budoucna: Sentry crash reporting (účet + DSN), pokročilejší filtr
+watchlistu, export portfolia do CSV, rozšířené grafové indikátory.

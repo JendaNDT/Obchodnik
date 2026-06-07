@@ -1,6 +1,6 @@
 # PROGRESS — snapshot
 
-Datum: 2026-06-06
+Datum: 2026-06-07
 
 ## Hotovo
 - Krok 1: Kostra projektu.
@@ -131,6 +131,20 @@ Datum: 2026-06-06
   „↻ Obnovit" (`RefreshWidgetAction` → jednorázový `RefreshWorker`).
 - Fonty: Hanken Grotesk + JetBrains Mono přes Downloadable Fonts (`Type.kt`,
   `res/values/font_certs.xml`).
+- Záloha dat: export API klíčů je opt-in, import má preview dialog a import
+  orchestrace má unit testy (`BackupRepositoryImportTest`).
+- Alerty: spuštěný alert si ukládá cenu a měnu (`triggeredPrice`,
+  `triggeredCurrency`), UI je zobrazuje a nabízí „Znovu aktivovat".
+- Stáří dat a fallbacky: repository vrací notice při cache fallbacku, limitu
+  Alpha Vantage, chybějícím klíči nebo částečně neaktualizovaných datech; Trh a
+  Detail zobrazují informační strip/poznámku.
+- Portfolio: existující pozice lze editovat přes stejný bottom sheet jako
+  přidání pozice.
+- Trh: watchlist lze ručně řadit šipkami v kategorii „Vše".
+- Widget: konfigurace podporuje režimy `Vyvážený`, `Ceny` a `Grafy`; widget
+  podle režimu mění mini grafy, F&G a počet řádků.
+- Detail + Trh: klikací dialog vysvětluje ETF zástupce SPY/QQQ/DIA, denní
+  komoditní data a CZK dopočet přes USD/CZK.
 
 ## Stav
 - Verze: AGP 8.7.0, Kotlin 2.0.21, Compose BOM 2024.10.01, Glance 1.1.0,
@@ -140,20 +154,23 @@ Datum: 2026-06-06
 - `./gradlew :app:assembleDebug --no-daemon` prošlo.
 - `./gradlew :app:testDebugUnitTest --no-daemon` prošlo.
 - Kombinované ověření
-  `./gradlew :app:assembleDebug :app:testDebugUnitTest --no-daemon` prošlo
-  2026-06-06 po dokončení Kroků 10 a 11.
-- Room DB je verze 2 s exportem schémat (`app/schemas`) a verzovanými
+  `./gradlew :app:testDebugUnitTest :app:assembleDebug --no-daemon` prošlo
+  2026-06-07 po dokončení režimů widgetu a vysvětlení datových aproximací.
+- `./gradlew :app:assembleDebugAndroidTest --no-daemon` prošlo 2026-06-07
+  jako kompilace instrumentovaných testů.
+- Room DB je verze 3 s exportem schémat (`app/schemas`) a verzovanými
   migracemi (`ObchodnikDatabase.MIGRATIONS`); destruktivní migrace jen pro
   downgrade.
 - Vylepšení po 1.0 jsou každé samostatně commitnuté na GitHubu; build i unit
-  testy procházejí (poslední commit `4f2f9ae`, fonty).
+  testy procházejí (poslední funkční commit `0f3d1b9`, režimy widgetu a
+  vysvětlení dat).
 
 ## Předávka
 - Verze 1.0 i vylepšení po 1.0 jsou hotové, otestované a na GitHubu. Pokračování
   probíhá v nástroji Codex od OpenAI. Viz `HANDOFF.md`.
 
 ## Nápady do budoucna
-- Instrumentované Room migrační testy (`MigrationTestHelper`).
-- Unit test pro `BackupRepository.import` (orchestrace importu).
 - Sentry crash reporting (vyžaduje účet + DSN).
-- Volitelně: vyřadit API klíče z exportu zálohy.
+- Pokročilejší filtrování a seskupování watchlistu.
+- Export portfolia do CSV.
+- Rozšířené grafové indikátory.

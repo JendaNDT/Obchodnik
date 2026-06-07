@@ -8,7 +8,7 @@ aktualizace, moderní tmavý design.
 - Jazyk UI: čeština
 - Platforma: Android (Jetpack Compose + Glance)
 - Data: CoinGecko (krypto + tokenizované kovy), Alpha Vantage (komodity, indexy)
-- Stav: verze 1.0 (kroky 1–11) + vylepšení po 1.0 (Room migrace, záloha dat, šifrování klíčů, fonty, chytrý widget, přístupnost); build i unit testy OK (2026-06-06)
+- Stav: verze 1.0 (kroky 1–11) + navazující vylepšení po 1.0; build i unit testy OK (2026-06-07)
 
 ## Jak projekt otevřít a spustit
 
@@ -28,7 +28,7 @@ Z kořene projektu:
 ./gradlew :app:assembleDebug :app:testDebugUnitTest --no-daemon
 ```
 
-Poslední ověření: 2026-06-06, `BUILD SUCCESSFUL`.
+Poslední ověření: 2026-06-07, `BUILD SUCCESSFUL`.
 
 ### API klíče (zdarma, doplníš později)
 
@@ -68,17 +68,21 @@ Vylepšení po 1.0:
 
 - Room: export schémat + verzované migrace (konec destruktivní migrace při upgradu).
 - Záloha dat: export/import watchlistu, portfolia, alertů a nastavení do JSON
-  (Nastavení → Záloha dat, přes Storage Access Framework).
+  (Nastavení → Záloha dat, přes Storage Access Framework); API klíče jsou ve
+  výchozím exportu vynechané a lze je přidat jen explicitní volbou.
 - Bezpečnost: API klíče šifrované přes Android Keystore (AES-256-GCM).
-- Detail: stáří dat a zdroj, poznámky „přibližně přes ETF" / denní komodity;
-  v seznamu Trh badge „≈ ETF" u indexů.
+- Detail a Trh: stáří dat, zdroj, notice při cache fallbacku, vysvětlení ETF
+  zástupců a denních komoditních dat.
 - Přístupnost: contentDescription pro grafy, gauge a sparkline (TalkBack).
 - Widget: tap na řádek otevře detail aktiva, tlačítko „↻ Obnovit".
 - Fonty: Hanken Grotesk + JetBrains Mono přes Downloadable Fonts.
+- Alerty: historie spuštění včetně ceny a měny, možnost znovu aktivovat.
+- Portfolio: editace existujících pozic.
+- Trh: ruční řazení watchlistu.
+- Widget: režimy Vyvážený, Ceny a Grafy.
 
-Otevřené technické dluhy: instrumentované Room migrační testy (`MigrationTestHelper`)
-přijdou s první reálnou migrací; volitelně vyřadit API klíče z exportu zálohy;
-případně crash reporting (Sentry — vyžaduje účet a DSN).
+Otevřené nápady: crash reporting (Sentry — vyžaduje účet a DSN), pokročilejší
+filtrování watchlistu, export portfolia do CSV a rozšířené grafové indikátory.
 
 ## Design handoff
 

@@ -3,7 +3,7 @@
 Předávka projektu pro pokračování ve vývoji. Aktuálně se pokračuje v nástroji
 **Codex od OpenAI**. (Dříve: Gemini, pak Cowork/Anthropic.)
 
-Datum poslední aktualizace: 2026-06-06.
+Datum poslední aktualizace: 2026-06-07.
 
 ## Krátce
 
@@ -61,22 +61,35 @@ Vylepšení po 1.0 (každé samostatný commit na GitHubu):
   `singleTop` + `onNewIntent`), tlačítko „↻ Obnovit" (`RefreshWidgetAction`).
 - Fonty: Hanken Grotesk + JetBrains Mono přes Downloadable Fonts (`Type.kt`,
   `res/values/font_certs.xml`).
+- Záloha dat: export API klíčů je výchoze vypnutý, import má preview a
+  `BackupRepository.import` má unit test orchestrace.
+- Alerty: historie spuštění ukládá cenu a měnu; spuštěné alerty lze z UI znovu
+  aktivovat.
+- Stáří dat: Trh a Detail zobrazují notice při cache fallbacku, limitu Alpha
+  Vantage, chybějícím klíči nebo částečně neaktualizovaných datech.
+- Portfolio: existující pozice lze editovat.
+- Trh: watchlist lze ručně řadit v kategorii „Vše".
+- Widget: konfigurace má režimy `Vyvážený`, `Ceny` a `Grafy`.
+- Detail/Trh: klikací dialog vysvětluje ETF zástupce, denní komoditní data a
+  měnový dopočet.
 
 ## Klíčové konvence a gotchas
 
 - DI: ruční `AppContainer` (žádný Hilt/Koin), napojený přes `ObchodnikApp`.
 - Čísla v monospace (`JetBrainsMono`) kvůli layout jitteru.
-- Room: změna entity = zvýšit `version` v `@Database`, přidat `Migration` do
-  `MIGRATIONS`, commitnout nový `app/schemas/<verze>.json`.
+- Room: aktuální verze databáze je 3. Změna entity = zvýšit `version` v
+  `@Database`, přidat `Migration` do `MIGRATIONS`, commitnout nový
+  `app/schemas/<verze>.json`.
 - Fonty vyžadují na zařízení Google Play Services; jinak fallback na systémový
   font (žádný pád).
-- Záloha: import přidává řádky (ne přepis); export obsahuje API klíče v plaintextu.
+- Záloha: import přidává řádky (ne přepis); export API klíčů je možný jen po
+  explicitním zapnutí volby v UI a pak jsou v JSON souboru čitelné.
 - Data: CoinGecko = krypto + tokenizované kovy; reálné komodity a indexy přes
   Alpha Vantage (free 25/den → tvrdě cachovat), indexy přes ETF (SPY/QQQ/DIA).
 
 ## Nápady do budoucna (nezačato)
 
-- Instrumentované Room migrační testy (`MigrationTestHelper`).
-- Unit test pro `BackupRepository.import` (orchestrace importu).
 - Sentry crash reporting (vyžaduje účet + DSN).
-- Volitelně vyřadit API klíče z exportu zálohy.
+- Pokročilejší filtrování a seskupování watchlistu.
+- Export portfolia do CSV.
+- Rozšířené grafové indikátory.
