@@ -117,4 +117,8 @@ Vylepšení po 1.0 (každé samostatný commit na GitHubu):
 
 ## Nápady do budoucna (nezačato)
 
-- Sentry crash reporting (vyžaduje účet + DSN).
+Backlog je hotový, žádné otevřené nápady.
+
+## Mimo scope
+
+- Sentry crash reporting — záměrně vynecháno (rozhodnutí 2026-06-07).

@@ -43,4 +43,6 @@ Legenda: ✅ hotovo · ⏳ čeká · ✖ přeskočeno
 34. ✅ Alerty: opakované alerty s hysterezí (přepínač Opakovat, re-arm po návratu ceny; DB v4)
 35. ✅ Portfolio: graf vývoje hodnoty v čase (denní snapshoty, rozsahy 1T/1M/1R/VŠE; DB v5)
 
-Nápady do budoucna: Sentry crash reporting (účet + DSN).
+Nápady do budoucna: žádné otevřené — backlog je hotový.
+
+Mimo scope (rozhodnutí 2026-06-07): Sentry crash reporting — záměrně vynecháno.

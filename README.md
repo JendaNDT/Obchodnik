@@ -84,12 +84,12 @@ Vylepšení po 1.0:
   názvu nebo ceny; vestavěné rychlé pohledy Ruční/Roste/Padá/Krypto/Indexy.
 - Widget: režimy Vyvážený, Ceny a Grafy.
 
-Otevřené nápady: crash reporting (Sentry — vyžaduje účet a DSN), pokročilejší
-přehledy portfolia, uložené vlastní pohledy watchlistu a opakované alerty.
+Otevřené nápady: žádné — celý plánovaný backlog je hotový (uložené pohledy
+watchlistu, opakované alerty i graf vývoje hodnoty portfolia). Sentry crash
+reporting je záměrně mimo scope.
 
-Poznámka k předání: poslední push na GitHubu je commit `6c0a3d0` a lokální
-pracovní strom navíc obsahuje otestované vestavěné rychlé pohledy watchlistu
-spolu s touto aktualizací dokumentace. Podrobnosti jsou v `HANDOFF.md`.
+Poznámka k předání: vše je commitnuté a pushnuté na GitHub (větev `main`),
+pracovní strom je čistý. Podrobnosti jsou v `HANDOFF.md`.
 
 ## Design handoff
 

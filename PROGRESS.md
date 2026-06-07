@@ -202,4 +202,7 @@ Datum: 2026-06-07
   Pokračování probíhá v nástroji Cowork od Anthropic. Viz `HANDOFF.md`.
 
 ## Nápady do budoucna
-- Sentry crash reporting (vyžaduje účet + DSN).
+Backlog je hotový, žádné otevřené nápady.
+
+## Mimo scope
+- Sentry crash reporting — záměrně vynecháno (rozhodnutí 2026-06-07).
