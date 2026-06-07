@@ -76,6 +76,7 @@ fun MarketsScreen(
     onCategorySelected: (MarketCategory) -> Unit,
     onQueryChanged: (String) -> Unit,
     onSortModeSelected: (MarketSortMode) -> Unit,
+    onQuickViewSelected: (MarketQuickView) -> Unit,
     onRefresh: () -> Unit,
     onSearch: () -> Unit,
     onOpenAsset: (String) -> Unit,
@@ -144,6 +145,13 @@ fun MarketsScreen(
                 )
             }
             item {
+                QuickViewChips(
+                    active = state.activeQuickView,
+                    onSelected = onQuickViewSelected,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
+                )
+            }
+            item {
                 WatchlistControls(
                     query = state.query,
                     selectedSortMode = state.sortMode,
@@ -206,6 +214,40 @@ fun MarketsScreen(
                     onClick = onSearch,
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun QuickViewChips(
+    active: MarketQuickView?,
+    onSelected: (MarketQuickView) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val c = Obchodnik.colors
+    Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        MarketQuickView.entries.forEach { view ->
+            val selected = active == view
+            Text(
+                text = view.label,
+                color = if (selected) c.onAccent else c.text2,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 11.sp,
+                maxLines = 1,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier
+                    .weight(1f)
+                    .background(
+                        color = if (selected) c.accent else c.surface,
+                        shape = RoundedCornerShape(Obchodnik.radii.chip),
+                    )
+                    .border(
+                        BorderStroke(1.dp, if (selected) c.accent else c.border),
+                        RoundedCornerShape(Obchodnik.radii.chip),
+                    )
+                    .clickable { onSelected(view) }
+                    .padding(vertical = 7.dp),
+            )
         }
     }
 }

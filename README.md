@@ -46,7 +46,7 @@ a klienti je používají v hlavičkách/queries.
 
 Viz:
 
-- `HANDOFF.md` — stručná předávka pro další AI (pokračování v Codexu).
+- `HANDOFF.md` — stručná předávka pro další AI (pokračování v Coworku).
 - `PROGRESS.md` — aktuální snapshot hotové práce.
 - `ROADMAP.md` — číslované kroky.
 - `IMPLEMENTATION_PLAN.md` — detailní architektura a akceptační kritéria.
@@ -81,11 +81,15 @@ Vylepšení po 1.0:
   alert přímo z detailu aktiva a rychlé šablony cílové ceny.
 - Portfolio: editace existujících pozic a export pozic s P/L do CSV.
 - Trh: ruční řazení watchlistu, lokální filtr a řazení podle růstu, poklesu,
-  názvu nebo ceny.
+  názvu nebo ceny; vestavěné rychlé pohledy Ruční/Roste/Padá/Krypto/Indexy.
 - Widget: režimy Vyvážený, Ceny a Grafy.
 
 Otevřené nápady: crash reporting (Sentry — vyžaduje účet a DSN), pokročilejší
-přehledy portfolia, uložené pohledy watchlistu a opakované alerty.
+přehledy portfolia, uložené vlastní pohledy watchlistu a opakované alerty.
+
+Poznámka k předání: poslední push na GitHubu je commit `6c0a3d0` a lokální
+pracovní strom navíc obsahuje otestované vestavěné rychlé pohledy watchlistu
+spolu s touto aktualizací dokumentace. Podrobnosti jsou v `HANDOFF.md`.
 
 ## Design handoff
 

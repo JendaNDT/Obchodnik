@@ -1,12 +1,13 @@
 # Obchodník — Implementační plán
 
 Samostatný, podrobný plán pro dokončení aplikace. Napsáno tak, aby podle něj
-mohl pokračovat jiný nástroj (aktuálně Codex od OpenAI) bez další
+mohl pokračovat jiný nástroj (aktuálně Cowork od Anthropic) bez další
 kontextové znalosti.
 Zdroj pravdy pro architekturu, API kontrakty a kroky. Doplňuje `AGENTS.md`
 (konvence) a `ROADMAP.md` (číslované kroky).
 
-Datum: 2026-06-06. Stav: verze 1.0 (kroky 1–11) hotová + vylepšení po 1.0 (viz `ROADMAP.md` a `PROGRESS.md`). Zkompilováno a otestováno.
+Datum: 2026-06-07. Stav: verze 1.0 (kroky 1–11) hotová + vylepšení po 1.0
+(viz `ROADMAP.md` a `PROGRESS.md`). Zkompilováno a otestováno.
 
 ---
 
@@ -35,7 +36,7 @@ Datum: 2026-06-06. Stav: verze 1.0 (kroky 1–11) hotová + vylepšení po 1.0 (
 
 ### 0.1 Aktuální implementační snapshot
 
-Všech 11 kroků je hotových (zkompilováno a otestováno 2026-06-06). Tato kapitola
+Všech 11 kroků je hotových (zkompilováno a otestováno 2026-06-07). Tato kapitola
 už neslouží jako TODO, ale jako přehled výsledné architektury.
 
 Hotové části:
@@ -58,6 +59,11 @@ Hotové části:
   `ui/theme`.
 - Hotový widget (`widget/*`) v Jetpack Glance ve 3 velikostech s konfigurací,
   WorkManager refresh (`work/*`) a vyhodnocením alertů s notifikacemi.
+- Navazující vylepšení po 1.0 jsou popsána v `ROADMAP.md`, `PROGRESS.md` a
+  `HANDOFF.md`: bezpečnější zálohy, šifrování klíčů, Room migrace, editace
+  portfolia, CSV export, portfolio insights, alert history, alert z detailu,
+  rychlé alert šablony, SMA indikátory, filtrování/řazení a rychlé pohledy
+  watchlistu, režimy widgetu a vysvětlení datových aproximací.
 
 Otevřené technické dluhy (ne blokery):
 
@@ -172,21 +178,21 @@ cz.obchodnik
 ├── ui/
 │   ├── theme/                   # Color, Theme, Type (hotovo v kroku 1)
 │   ├── components/              # AssetIcon, Change, Card, Sparkline, PriceChart, Gauge…
-│   ├── navigation/              # plánované vyčlenění rout; aktuálně v MainActivity
+│   ├── navigation/              # routy jsou aktuálně v MainActivity
 │   ├── markets/                 # MarketsScreen + MarketsViewModel
 │   ├── detail/                  # DetailScreen + DetailViewModel
 │   ├── search/                  # SearchScreen + ViewModel
 │   ├── portfolio/               # PortfolioScreen + ViewModel
 │   ├── alerts/                  # AlertsScreen + ViewModel
 │   ├── fng/                     # FngScreen + ViewModel
-│   ├── settings/                # čeká na krok 7
+│   ├── settings/                # SettingsScreen + ViewModel
 │   └── onboarding/              # OnboardingScreen
-├── widget/                      # čeká na krok 8
+├── widget/
 │   ├── ObchodnikWidget.kt       # GlanceAppWidget
 │   ├── ObchodnikWidgetReceiver.kt
 │   ├── WidgetState.kt           # serializace stavu pro Glance
 │   └── WidgetConfigActivity.kt
-└── work/                        # čeká na krok 8
+└── work/
     └── RefreshWorker.kt         # periodický refresh dle intervalu
 ```
 

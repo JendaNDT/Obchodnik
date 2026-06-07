@@ -59,6 +59,11 @@ class MarketsViewModel(
             selectedCategory = controls.category,
             query = controls.query,
             sortMode = controls.sortMode,
+            activeQuickView = MarketQuickView.entries.firstOrNull {
+                it.category == controls.category &&
+                    it.sortMode == controls.sortMode &&
+                    it.query == controls.query
+            },
             currency = settings.currency,
             isLoading = watchlist.isEmpty() && refreshing,
             isRefreshing = refreshing,
@@ -88,6 +93,12 @@ class MarketsViewModel(
 
     fun selectSortMode(mode: MarketSortMode) {
         sortMode.value = mode
+    }
+
+    fun applyQuickView(view: MarketQuickView) {
+        selectedCategory.value = view.category
+        query.value = view.query
+        sortMode.value = view.sortMode
     }
 
     fun refresh(force: Boolean = true) {

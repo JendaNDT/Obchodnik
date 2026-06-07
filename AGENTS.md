@@ -2,8 +2,9 @@
 
 ## Spolupráce s uživatelem
 
-Uživatel (Jenda) neprogramuje — má nápady, kód píše navazující AI agent
-(aktuálně Codex od OpenAI; dříve Gemini a Cowork/Anthropic). Platí:
+Uživatel (Jenda) neprogramuje — má nápady, kód píše navazující AI agent.
+Aktuální pokračování má probíhat v nástroji Cowork od Anthropic
+(dříve Gemini, Cowork/Anthropic a Codex od OpenAI). Platí:
 
 - **Diskuze před kódem.** Nikdy nepiš/needituj soubory bez popisu plánu a
   explicitního schválení („piš" / „ok" / „pokračuj").
@@ -26,9 +27,12 @@ Uživatel (Jenda) neprogramuje — má nápady, kód píše navazující AI agen
   Zobrazované jméno appky: „Obchodník" (v `strings.xml`).
 - Verze řízené přes `gradle/libs.versions.toml` (version catalog).
 - Min SDK 26, target/compile SDK 35. JDK 17.
-- Aktuální stav projektu: verze 1.0 (kroky 1–11) hotová + sada vylepšení po
-  1.0 (záloha dat, šifrování klíčů, fonty, chytrý widget, přístupnost, Room
-  migrace). Build i unit testy OK. Detaily v `PROGRESS.md` a `HANDOFF.md`.
+- Aktuální stav projektu: verze 1.0 (kroky 1–11) hotová + rozsáhlá sada
+  vylepšení po 1.0 (Room migrace, záloha dat, šifrování klíčů, fonty,
+  chytrý widget, přístupnost, stale-data notices, alert history, editace
+  portfolia, CSV export, portfolio insights, filtrování/řazení watchlistu,
+  režimy widgetu, SMA indikátory, alert z detailu a rychlé alert šablony).
+  Build i unit testy OK. Detaily v `PROGRESS.md` a `HANDOFF.md`.
 
 ## Design tokeny
 
@@ -51,13 +55,14 @@ down `#EA3943`. Čísla v monospace (zabraňuje poskakování číslic).
 - Gradle wrapper je funkční včetně `gradle-wrapper.jar`.
 - `local.properties` je lokální soubor s cestou k Android SDK
   (`/Users/jenda/Library/Android/sdk`) a patří do `.gitignore`.
-- Poslední ověření proběhlo příkazem
-  `./gradlew :app:assembleDebug :app:testDebugUnitTest --no-daemon`.
+- Poslední ověření proběhlo příkazy
+  `./gradlew :app:testDebugUnitTest :app:assembleDebug --no-daemon` a
+  `./gradlew :app:assembleDebugAndroidTest --no-daemon`.
 - Fonty: Hanken Grotesk + JetBrains Mono přes Downloadable Fonts (`Type.kt`),
   certs v `res/values/font_certs.xml` (oficiální Google sample, nevymýšlet ručně).
   Vyžadují Google Play Services; jinak fallback na systémové písmo.
 - Room má zapnutý export schémat (`room.schemaLocation` -> `app/schemas`,
-  `exportSchema = true`) a verzované migrace; baseline je schéma verze 2.
+  `exportSchema = true`) a verzované migrace; aktuální DB verze je 3.
   Destruktivní migrace je povolená jen pro *downgrade*. **Workflow při změně
   entity:** zvyš `version` v `@Database`, přidej `Migration` do
   `ObchodnikDatabase.MIGRATIONS`, commitni nový `app/schemas/<verze>.json`.

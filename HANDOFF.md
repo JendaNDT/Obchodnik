@@ -1,7 +1,7 @@
 # HANDOFF — Obchodník
 
 Předávka projektu pro pokračování ve vývoji. Aktuálně se pokračuje v nástroji
-**Codex od OpenAI**. (Dříve: Gemini, pak Cowork/Anthropic.)
+**Cowork od Anthropic**. (Dříve: Gemini, Cowork/Anthropic a Codex od OpenAI.)
 
 Datum poslední aktualizace: 2026-06-07.
 
@@ -21,6 +21,13 @@ hotové, zkompilované, otestované a na GitHubu.
 2. `ROADMAP.md` — kroky 1–11 + vylepšení po 1.0.
 3. `PROGRESS.md` — detailní historie implementace.
 4. `IMPLEMENTATION_PLAN.md` — architektura, API kontrakty, datové zdroje.
+
+## Aktuální pracovní strom
+
+Pozor: poslední push na GitHubu je `6c0a3d0 Alerts: add quick target presets`.
+V lokálním pracovním stromu jsou navíc rozpracované, otestované a zatím
+necommitnuté vestavěné rychlé pohledy watchlistu (`MarketQuickView`,
+`MarketQuickViewTest`) a odpovídající aktualizace dokumentace.
 
 ## Pravidla spolupráce (shrnutí AGENTS.md)
 
@@ -79,6 +86,9 @@ Vylepšení po 1.0 (každé samostatný commit na GitHubu):
 - Trh: watchlist lze ručně řadit v kategorii „Vše"; navíc má lokální filtr a
   řazení podle růstu, poklesu, názvu nebo ceny. Transformaci kryje
   `MarketListTransformerTest`.
+- Trh: vestavěné rychlé pohledy `Ruční`, `Roste`, `Padá`, `Krypto`, `Indexy`
+  nastavují existující kategorii/řazení/dotaz; model kryje `MarketQuickViewTest`
+  (aktuálně lokální necommitnutá změna).
 - Widget: konfigurace má režimy `Vyvážený`, `Ceny` a `Grafy`.
 - Detail/Trh: klikací dialog vysvětluje ETF zástupce, denní komoditní data a
   měnový dopočet.
@@ -102,6 +112,4 @@ Vylepšení po 1.0 (každé samostatný commit na GitHubu):
 - Sentry crash reporting (vyžaduje účet + DSN).
 - Opakované alerty.
 - Pokročilejší přehledy portfolia.
-- Uložené pohledy watchlistu.
-- Rychlé šablony alertů.
-- Alert z detailu aktiva.
+- Uložené vlastní pohledy watchlistu.

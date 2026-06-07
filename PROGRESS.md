@@ -111,7 +111,7 @@ Datum: 2026-06-07
   - Upravena `MainActivity.kt` pro integraci spodního navigačního panelu `BottomNavigationBar` (4 záložky: Trh, Portfolio, F&G, Alerty) na top-level obrazovkách, a ochranu navigačního stromu před dokončením onboardingu.
   - Doplněny unit testy pro výpočetní logiku portfolia (`PortfolioViewModelTest`) a správu alertů (`AlertsViewModelTest`).
 
-## Vylepšení po 1.0 (2026-06-06, pokračování v Codexu)
+## Vylepšení po 1.0 (2026-06-07, pokračování v Coworku)
 - Room: zapnut export schémat (`app/schemas`, `exportSchema = true`) a verzované
   migrace přes `ObchodnikDatabase.MIGRATIONS`; odebrána destruktivní migrace při
   upgradu (zůstává jen pro downgrade). Baseline schéma `schemas/2.json`.
@@ -157,6 +157,8 @@ Datum: 2026-06-07
   aktivem a cenou; uložení používá existující `AlertRepository`.
 - Alerty: `AddAlertSheet` má rychlé šablony `+5 %`, `+10 %`, `-5 %`, `-10 %`
   nad známou aktuální cenou; výpočet cílové ceny kryje `AlertTargetPresetsTest`.
+- Trh: přidány vestavěné rychlé pohledy `Ruční`, `Roste`, `Padá`, `Krypto` a
+  `Indexy`; model pohledů kryje `MarketQuickViewTest`.
 
 ## Stav
 - Verze: AGP 8.7.0, Kotlin 2.0.21, Compose BOM 2024.10.01, Glance 1.1.0,
@@ -167,22 +169,23 @@ Datum: 2026-06-07
 - `./gradlew :app:testDebugUnitTest --no-daemon` prošlo.
 - Kombinované ověření
   `./gradlew :app:testDebugUnitTest :app:assembleDebug --no-daemon` prošlo
-  2026-06-07 po dokončení rychlých šablon alertů.
+  2026-06-07 po dokončení vestavěných rychlých pohledů watchlistu.
 - `./gradlew :app:assembleDebugAndroidTest --no-daemon` prošlo 2026-06-07
   jako kompilace instrumentovaných testů.
 - Room DB je verze 3 s exportem schémat (`app/schemas`) a verzovanými
   migracemi (`ObchodnikDatabase.MIGRATIONS`); destruktivní migrace jen pro
   downgrade.
-- Vylepšení po 1.0 jsou každé samostatně commitnuté na GitHubu; build i unit
-  testy procházejí (poslední funkční commit `0f3d1b9`, režimy widgetu a
-  vysvětlení dat).
+- Poslední push na GitHubu je `6c0a3d0 Alerts: add quick target presets`.
+  Lokální pracovní strom navíc obsahuje otestované, zatím necommitnuté
+  vestavěné rychlé pohledy watchlistu a odpovídající dokumentační aktualizace.
 
 ## Předávka
-- Verze 1.0 i vylepšení po 1.0 jsou hotové, otestované a na GitHubu. Pokračování
-  probíhá v nástroji Codex od OpenAI. Viz `HANDOFF.md`.
+- Verze 1.0 i vylepšení po 1.0 jsou hotové, otestované a na GitHubu; lokální
+  pracovní strom má navíc rozpracovaný checkpoint rychlých pohledů watchlistu.
+  Pokračování probíhá v nástroji Cowork od Anthropic. Viz `HANDOFF.md`.
 
 ## Nápady do budoucna
 - Sentry crash reporting (vyžaduje účet + DSN).
 - Pokročilejší přehledy portfolia.
-- Uložené pohledy watchlistu.
+- Uložené vlastní pohledy watchlistu.
 - Opakované alerty.

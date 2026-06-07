@@ -1,6 +1,6 @@
 # ROADMAP — Obchodník
 
-Verze 1.0 (kroky 1–11) hotová. Pokračování v Codexu — viz „Vylepšení po 1.0" níže.
+Verze 1.0 (kroky 1–11) hotová. Pokračování v Coworku — viz „Vylepšení po 1.0" níže.
 
 1. ✅ Kostra projektu (Gradle, témata/barvy, MainActivity, ikona, docs)
 2. ✅ Datová vrstva CoinGecko (modely, Retrofit, search/ceny/historie, testy)
@@ -16,7 +16,7 @@ Verze 1.0 (kroky 1–11) hotová. Pokračování v Codexu — viz „Vylepšení
 
 Legenda: ✅ hotovo · ⏳ čeká · ✖ přeskočeno
 
-## Vylepšení po 1.0 (pokračování v Codexu)
+## Vylepšení po 1.0 (pokračování v Coworku)
 
 12. ✅ Room: export schémat + verzované migrace (konec destruktivní migrace)
 13. ✅ Git + GitHub repo (JendaNDT/Obchodnik)
@@ -38,6 +38,7 @@ Legenda: ✅ hotovo · ⏳ čeká · ✖ přeskočeno
 29. ✅ Detail: SMA 7 a SMA 30 indikátory nad line grafem
 30. ✅ Detail: vytvoření cenového alertu přímo z detailu aktiva
 31. ✅ Alerty: rychlé šablony cílové ceny +5 %, +10 %, -5 %, -10 %
+32. ✅ Trh: vestavěné rychlé pohledy Ruční, Roste, Padá, Krypto, Indexy
 
 Nápady do budoucna: Sentry crash reporting (účet + DSN), pokročilejší přehledy
-portfolia, uložené pohledy watchlistu, opakované alerty.
+portfolia, uložené vlastní pohledy watchlistu, opakované alerty.

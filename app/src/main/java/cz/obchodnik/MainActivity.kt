@@ -219,6 +219,7 @@ private fun ObchodnikAppContent(
                     onCategorySelected = viewModel::selectCategory,
                     onQueryChanged = viewModel::updateQuery,
                     onSortModeSelected = viewModel::selectSortMode,
+                    onQuickViewSelected = viewModel::applyQuickView,
                     onRefresh = { viewModel.refresh(force = true) },
                     onSearch = { navController.navigate("search") },
                     onOpenAsset = { assetId -> navController.navigate("detail/${Uri.encode(assetId)}") },

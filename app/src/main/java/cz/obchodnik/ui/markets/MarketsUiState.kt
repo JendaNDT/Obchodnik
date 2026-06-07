@@ -8,6 +8,7 @@ data class MarketsUiState(
     val selectedCategory: MarketCategory = MarketCategory.ALL,
     val query: String = "",
     val sortMode: MarketSortMode = MarketSortMode.MANUAL,
+    val activeQuickView: MarketQuickView? = MarketQuickView.MANUAL,
     val currency: String = "usd",
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
